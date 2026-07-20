@@ -15,9 +15,6 @@ storage/framework/testing
 storage/framework/views
 storage/*.key
 
-database/*.sqlite
-database/*.sqlite-*
-
 .idea
 .vscode
 .cursor

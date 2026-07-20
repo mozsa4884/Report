@@ -47,7 +47,7 @@ COPY resources /var/www/resources
 RUN npm run build
 
 # Copy only the clean application source. Runtime files such as .env, compiled
-# Blade views, local SQLite databases, vendor, and node_modules are excluded
+# Blade views, local runtime files, vendor, and node_modules are excluded
 # by .dockerignore so a deployment cannot inherit state from a local machine.
 COPY . /var/www
 
@@ -57,8 +57,16 @@ RUN composer dump-autoload --optimize
 # Configure Nginx to run as www-data user
 RUN sed -i 's/user nginx;/user www-data;/g' /etc/nginx/nginx.conf
 
-# Set permissions for Laravel and public static files
-RUN chown -R www-data:www-data /var/www && \
+# Recreate Laravel runtime directories excluded from the build context. Laravel
+# requires these paths even when they contain no cached files yet.
+RUN mkdir -p \
+    /var/www/storage/logs \
+    /var/www/storage/framework/cache/data \
+    /var/www/storage/framework/sessions \
+    /var/www/storage/framework/testing \
+    /var/www/storage/framework/views \
+    /var/www/bootstrap/cache && \
+    chown -R www-data:www-data /var/www && \
     chmod -R 755 /var/www && \
     chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
