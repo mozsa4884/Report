@@ -149,6 +149,7 @@ fi
 # =============================================
 echo "Running migrations with seed..."
 php artisan migrate --seed --force || echo "Migration/Seed failed but continuing..."
+php artisan view:clear
 
 # =============================================
 # STEP 7: Setup Nginx port

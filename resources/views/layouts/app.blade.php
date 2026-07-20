@@ -11,8 +11,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Custom Style Sheet -->
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <!-- Custom Style Sheet with Cache Busting -->
+    <link rel="stylesheet" href="{{ asset('css/style.css?v=' . filemtime(public_path('css/style.css'))) }}">
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     
     <style>
