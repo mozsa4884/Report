@@ -131,6 +131,11 @@ html[data-theme="dark"] .sheet-meta-grid {
     border-color: #374151 !important;
 }
 
+/* Invert date picker calendar icon to white in dark mode */
+html[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) !important;
+}
+
 html[data-theme="dark"] .feedback-box {
     background-color: #111827 !important;
     border-color: #374151 !important;
