@@ -20,8 +20,8 @@
                 <img src="{{ asset('logo-pertamina.png') }}" alt="Pertamina Logo" style="height: 40px; width: auto; object-fit: contain;">
             </div>
             <div class="sheet-title-area" style="text-align: center;">
-                <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: 0.5px;">LAPORAN HARIAN KEGIATAN FUELMAN</h2>
-                <h3 style="font-size: 0.95rem; color: #475569; font-weight: 600; margin-top: 0.25rem;">WAREHOUSE & INVENTORY SITE SUNGAI PUTTING</h3>
+                <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: 0.5px;">LAPORAN HARIAN KEGIATAN FUELMAN</h2>
+                <h3 style="font-size: 0.95rem; color: var(--text-secondary); font-weight: 600; margin-top: 0.25rem;">WAREHOUSE & INVENTORY SITE SUNGAI PUTTING</h3>
             </div>
             <div class="sheet-logo-right" style="display: flex; justify-content: flex-end;">
                 <img src="{{ asset('logo-agm.png') }}" alt="AGM Logo" style="height: 40px; width: auto; object-fit: contain;">

@@ -73,6 +73,81 @@ html[data-theme="dark"] .custom-modal-content {
     border-color: #1f2937 !important;
 }
 
+/* Dark mode for report sheet & form elements */
+html[data-theme="dark"] .report-sheet-container {
+    background-color: var(--bg-secondary) !important;
+}
+
+html[data-theme="dark"] .sheet-table {
+    border-color: #374151 !important;
+}
+
+html[data-theme="dark"] .sheet-table th,
+html[data-theme="dark"] .sheet-table td {
+    border-color: #374151 !important;
+    color: var(--text-primary) !important;
+}
+
+html[data-theme="dark"] .sheet-table th {
+    background: #1f2937 !important;
+    color: #e5e7eb !important;
+}
+
+html[data-theme="dark"] .sheet-table th.section-pagi {
+    background: rgba(59, 130, 246, 0.15) !important;
+    color: #93c5fd !important;
+}
+html[data-theme="dark"] .sheet-table th.section-sore {
+    background: rgba(245, 158, 11, 0.15) !important;
+    color: #fcd34d !important;
+}
+html[data-theme="dark"] .sheet-table th.section-fm {
+    background: rgba(16, 185, 129, 0.15) !important;
+    color: #6ee7b7 !important;
+}
+
+html[data-theme="dark"] .sheet-table tr.average-row td {
+    background-color: #1f2937 !important;
+}
+
+html[data-theme="dark"] .sheet-input {
+    color: var(--text-primary) !important;
+}
+
+html[data-theme="dark"] .sheet-input:hover,
+html[data-theme="dark"] .sheet-input:focus {
+    background-color: #1f2937 !important;
+    border-color: var(--primary) !important;
+}
+
+html[data-theme="dark"] .sheet-input.read-only {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: var(--text-muted) !important;
+}
+
+html[data-theme="dark"] .sheet-meta-grid {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+    border-color: #374151 !important;
+}
+
+html[data-theme="dark"] .feedback-box {
+    background-color: #111827 !important;
+    border-color: #374151 !important;
+}
+
+html[data-theme="dark"] .auth-container {
+    background: #090d16 !important;
+}
+
+html[data-theme="dark"] .auth-card {
+    background: rgba(17, 24, 39, 0.9) !important;
+    border-color: #1f2937 !important;
+}
+
+html[data-theme="dark"] .auth-header h1 {
+    color: #f3f4f6 !important;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -294,6 +369,8 @@ body {
     margin-left: 280px;
     flex-grow: 1;
     min-height: 100vh;
+    max-height: 100vh;
+    overflow-y: auto;
     padding: 2rem;
     display: flex;
     flex-direction: column;
