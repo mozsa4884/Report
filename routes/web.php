@@ -7,6 +7,16 @@ use App\Http\Controllers\TankController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/debug-logs', function () {
+    $path = storage_path('logs/laravel.log');
+    if (!file_exists($path)) {
+        return 'No log file found.';
+    }
+    $lines = file($path);
+    $lastLines = array_slice($lines, -150);
+    return '<pre>' . implode('', $lastLines) . '</pre>';
+});
+
 // Show landing page for guests, redirect to dashboard for authenticated users
 Route::get('/', function () {
     if (auth()->check()) {
