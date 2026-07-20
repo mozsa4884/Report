@@ -1,14 +1,15 @@
 version: '3.8'
 
 services:
-  # Laravel Application
+  # Laravel Application (PHP-FPM + Nginx bundled inside)
   app:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: laravel_app
     restart: unless-stopped
-    tty: true
+    ports:
+      - "8000:80"
     environment:
       SERVICE_NAME: app
       SERVICE_TAGS: dev
@@ -16,21 +17,6 @@ services:
       - ./:/var/www
     depends_on:
       - db
-    networks:
-      - laravel_net
-
-  # Nginx Web Server
-  web:
-    image: nginx:alpine
-    container_name: laravel_web
-    restart: unless-stopped
-    ports:
-      - "8000:80"
-    volumes:
-      - ./:/var/www
-      - ./.docker/nginx.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - app
     networks:
       - laravel_net
 

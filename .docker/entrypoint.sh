@@ -19,5 +19,9 @@ php artisan view:cache
 echo "Running migrations..."
 php artisan migrate --force
 
+# Start Nginx in background
+nginx
+
 # Start PHP-FPM
 exec php-fpm
+
