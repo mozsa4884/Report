@@ -353,7 +353,7 @@
                     @for($i = 0; $i < $transferRowCount; $i++)
                         @php
                             $tData = isset($transfers[$i]) ? $transfers[$i] : null;
-                            $dariTangki = old("transfers.{$i}.dari_tangki", $tData ? $tData->dari_tangki : ($transferTankCodes[$i] ?? ''));
+                            $dariTangki = old("transfers.{$i}.dari_tangki", $tData ? $tData->dari_tangki : ($transferTankCodes->get($i) ?? ''));
                             $keTangki = old("transfers.{$i}.ke_tangki", $tData ? $tData->ke_tangki : '');
                         @endphp
                         <tr>

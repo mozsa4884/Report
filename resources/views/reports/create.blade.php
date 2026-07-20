@@ -356,7 +356,7 @@
                                 <select name="transfers[{{ $i }}][dari_tangki]" class="sheet-input">
                                     <option value="">Pilih</option>
                                     @foreach($transferTankCodes as $tankCode)
-                                        <option value="{{ $tankCode }}" @selected(old("transfers.{$i}.dari_tangki", $transferTankCodes[$i] ?? '') === $tankCode)>{{ $tankCode }}</option>
+                                        <option value="{{ $tankCode }}" @selected(old("transfers.{$i}.dari_tangki", $transferTankCodes->get($i) ?? '') === $tankCode)>{{ $tankCode }}</option>
                                     @endforeach
                                 </select>
                             </td>
