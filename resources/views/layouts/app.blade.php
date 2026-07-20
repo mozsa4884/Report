@@ -14,6 +14,19 @@
     <!-- Custom Style Sheet -->
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    
+    <style>
+        .db-icon-sun, .db-icon-moon { pointer-events: none; }
+        html[data-theme="light"] .db-icon-moon { display: block; }
+        html[data-theme="light"] .db-icon-sun { display: none; }
+        html[data-theme="dark"] .db-icon-sun { display: block; }
+        html[data-theme="dark"] .db-icon-moon { display: none; }
+        
+        /* Dark theme variable overrides for Dashboard sidebar elements if needed */
+        html[data-theme="dark"] {
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+    </style>
     @yield('styles')
 </head>
 <body>
@@ -109,19 +122,43 @@
                 @endif
             </ul>
 
-            <!-- Logout -->
+            <!-- Theme Toggle & Logout -->
             @auth
-            <form action="{{ route('logout') }}" method="POST" class="logout-form">
-                @csrf
-                <button type="submit" class="btn-logout">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                        <polyline points="16 17 21 12 16 7"></polyline>
-                        <line x1="21" y1="12" x2="9" y2="12"></line>
+            <div class="sidebar-footer" style="margin-top: auto; display: flex; flex-direction: column; gap: 0.65rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color, rgba(0,0,0,0.06)); width: 100%;">
+                <!-- Theme Toggle Button (Atas) -->
+                <button type="button" class="btn-theme-toggle" id="dashboardThemeToggle" style="display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.15); background: transparent; color: #94a3b8; font-family: inherit; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.color='#ffffff'; this.style.borderColor='rgba(255, 255, 255, 0.3)'" onmouseout="this.style.color='#94a3b8'; this.style.borderColor='rgba(255, 255, 255, 0.15)'">
+                    <!-- Sun Icon -->
+                    <svg class="db-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
                     </svg>
-                    <span>Keluar</span>
+                    <!-- Moon Icon -->
+                    <svg class="db-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <span class="theme-text">Ubah Mode</span>
                 </button>
-            </form>
+
+                <!-- Logout Button with Border (Bawah) -->
+                <form action="{{ route('logout') }}" method="POST" class="logout-form" style="width: 100%; margin: 0;">
+                    @csrf
+                    <button type="submit" class="btn-logout" style="display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05); color: #ef4444; font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        <span>Keluar</span>
+                    </button>
+                </form>
+            </div>
             @endauth
         </aside>
 
@@ -184,19 +221,32 @@
     </div>
 
     <script>
+        // --- Theme Toggle Logic for Dashboard ---
+        const htmlElement = document.documentElement;
+        const dbThemeToggle = document.getElementById('dashboardThemeToggle');
+
+        // Apply saved theme on page load
+        const savedDbTheme = localStorage.getItem('theme') || 'light';
+        htmlElement.setAttribute('data-theme', savedDbTheme);
+
+        if (dbThemeToggle) {
+            dbThemeToggle.addEventListener('click', () => {
+                const currentTheme = htmlElement.getAttribute('data-theme');
+                const nextTheme = currentTheme === 'light' ? 'dark' : 'light';
+                htmlElement.setAttribute('data-theme', nextTheme);
+                localStorage.setItem('theme', nextTheme);
+            });
+        }
+
+        // --- Delete Confirmation Modal Logic ---
         let formToSubmit = null;
 
         function confirmDelete(event, formElement) {
-            // Prevent form submission
             event.preventDefault();
             event.stopPropagation();
-            
             formToSubmit = formElement;
-            
-            // Show modal
             const modal = document.getElementById('customConfirmModal');
             modal.classList.add('active');
-            
             return false;
         }
 
@@ -213,7 +263,6 @@
             closeCustomConfirm();
         });
 
-        // Close modal when clicking overlay background
         document.getElementById('customConfirmModal').addEventListener('click', function(event) {
             if (event.target === this) {
                 closeCustomConfirm();

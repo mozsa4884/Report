@@ -28,6 +28,51 @@
     --font: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
+/* ========================================================
+   DARK THEME VARIABLES OVERRIDES
+   ======================================================== */
+html[data-theme="dark"] {
+    --bg-primary: #090d16;
+    --bg-secondary: #111827;
+    --bg-sidebar: #030712;
+    --text-primary: #f3f4f6;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    --text-light: #f9fafb;
+    --border-color: #1f2937;
+    
+    /* Overrides card background colors inside dashboard main content */
+    background-color: #090d16;
+}
+
+/* Custom dark mode adjustments for table hovers and alerts */
+html[data-theme="dark"] .table-list tr:hover {
+    background-color: rgba(255, 255, 255, 0.02) !important;
+}
+
+html[data-theme="dark"] .alert-success {
+    background-color: rgba(16, 185, 129, 0.1) !important;
+    color: #34d399 !important;
+    border-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+html[data-theme="dark"] .alert-danger {
+    background-color: rgba(239, 68, 68, 0.1) !important;
+    color: #fca5a5 !important;
+    border-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+html[data-theme="dark"] .alert-warning {
+    background-color: rgba(245, 158, 11, 0.1) !important;
+    color: #fde68a !important;
+    border-color: rgba(245, 158, 11, 0.2) !important;
+}
+
+html[data-theme="dark"] .custom-modal-content {
+    background-color: #111827 !important;
+    border-color: #1f2937 !important;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -374,7 +419,7 @@ body {
 }
 
 .btn-secondary {
-    background-color: white;
+    background-color: var(--bg-secondary);
     color: var(--text-secondary);
     border-color: var(--border-color);
 }
@@ -418,7 +463,7 @@ body {
     font-size: 0.95rem;
     font-family: var(--font);
     color: var(--text-primary);
-    background-color: white;
+    background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     transition: var(--transition);

@@ -7,9 +7,12 @@ use App\Http\Controllers\TankController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
-// Redirect home to dashboard
+// Show landing page for guests, redirect to dashboard for authenticated users
 Route::get('/', function () {
-    return redirect()->route('dashboard');
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    return view('welcome');
 });
 
 // Guest Routes
