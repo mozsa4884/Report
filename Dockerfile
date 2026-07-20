@@ -4,7 +4,7 @@ FROM php:8.2-fpm-alpine
 WORKDIR /var/www
 
 # Install system dependencies & PHP extensions
-RUN apk update && apk add --no-bin-sh \
+RUN apk update && apk add --no-cache \
     build-base \
     libpng-dev \
     libjpeg-turbo-dev \
