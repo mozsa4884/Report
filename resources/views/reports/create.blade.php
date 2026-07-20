@@ -225,10 +225,10 @@
        
            
             @php
-                $spm1Cap = $tanks->where('code', 'SPM1')->first()->capacity ?? 0;
-                $spm2Cap = $tanks->where('code', 'SPM2')->first()->capacity ?? 0;
-                $spm3Cap = $tanks->where('code', 'SPM3')->first()->capacity ?? 0;
-                $ft05Cap = $tanks->where('code', 'FT05')->first()->capacity ?? 0;
+                $spm1Cap = $tanks->where('code', 'SPM1')->first()?->capacity ?? 0;
+                $spm2Cap = $tanks->where('code', 'SPM2')->first()?->capacity ?? 0;
+                $spm3Cap = $tanks->where('code', 'SPM3')->first()?->capacity ?? 0;
+                $ft05Cap = $tanks->where('code', 'FT05')->first()?->capacity ?? 0;
                 $totCapVal = $spm1Cap + $spm2Cap + $spm3Cap + $ft05Cap;
             @endphp
             <div class="table-responsive">
@@ -776,7 +776,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // ===== Kapasitas Tangki Widget - SOH Input Auto-Calculate =====
-    const tankCapacities = @json($tanks->groupBy('code')->map(fn($g) => $g->first()->capacity ?? 0));
+    const tankCapacities = @json($tanks->groupBy('code')->map(fn($g) => $g->first()?->capacity ?? 0));
 
     function updateKapasitasWidget() {
         let totSoh = 0;

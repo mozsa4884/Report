@@ -562,10 +562,10 @@
         <!-- Right Capacity Statistics Widget -->
         @php
             // Real DB Capacities
-            $spm1Cap = $report->items->where('tank.code', 'SPM1')->first()->tank->capacity ?? 0;
-            $spm2Cap = $report->items->where('tank.code', 'SPM2')->first()->tank->capacity ?? 0;
-            $spm3Cap = $report->items->where('tank.code', 'SPM3')->first()->tank->capacity ?? 0;
-            $ft05Cap = $report->items->where('tank.code', 'FT05')->first()->tank->capacity ?? 0;
+            $spm1Cap = $report->items->where('tank.code', 'SPM1')->first()?->tank?->capacity ?? 0;
+            $spm2Cap = $report->items->where('tank.code', 'SPM2')->first()?->tank?->capacity ?? 0;
+            $spm3Cap = $report->items->where('tank.code', 'SPM3')->first()?->tank?->capacity ?? 0;
+            $ft05Cap = $report->items->where('tank.code', 'FT05')->first()?->tank?->capacity ?? 0;
 
             // Saved SOH
             $sohSpm1 = $report->soh_spm1 ?? 0;
