@@ -46,7 +46,9 @@ COPY vite.config.js* tailwind.config.js* postcss.config.js* /var/www/
 COPY resources /var/www/resources
 RUN npm run build
 
-# Copy the rest of application files
+# Copy only the clean application source. Runtime files such as .env, compiled
+# Blade views, local SQLite databases, vendor, and node_modules are excluded
+# by .dockerignore so a deployment cannot inherit state from a local machine.
 COPY . /var/www
 
 # Run composer scripts
