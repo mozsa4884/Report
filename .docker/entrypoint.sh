@@ -169,6 +169,12 @@ LISTEN_PORT="${PORT:-80}"
 echo "Setting Nginx port to $LISTEN_PORT"
 sed -i "s/listen 80;/listen $LISTEN_PORT;/g" /etc/nginx/http.d/default.conf
 
+# Pre-compile all Blade views in a single process before any worker starts.
+# This prevents race conditions where two PHP-FPM workers simultaneously
+# compile the same template and one worker reads a partially-written file.
+echo "Pre-compiling Blade views..."
+php artisan view:cache
+
 # =============================================
 # STEP 8: Start services
 # =============================================
