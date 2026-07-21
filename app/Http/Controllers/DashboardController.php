@@ -99,6 +99,10 @@ class DashboardController extends Controller
 
     public function analytics()
     {
+        if (Auth::user()->isFuelman()) {
+            abort(403, 'Fuelman tidak memiliki akses ke rekap dan analisis BBM.');
+        }
+
         $approvedReports = DailyReport::where('status', 'approved')->orderBy('date', 'desc')->get();
         
         $usageData = DailyReportItem::whereHas('dailyReport', function($q) {

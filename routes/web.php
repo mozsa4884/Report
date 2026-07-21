@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/analytics', [DashboardController::class, 'analytics'])->name('reports.analytics');
     Route::get('/tanks', [TankController::class, 'index'])->name('tanks.index');
+    Route::middleware('role:group_leader,supervisor')->get('/monitoring-tangki', [TankController::class, 'monitoring'])->name('tanks.monitoring');
 
     // Report listing for everyone
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');

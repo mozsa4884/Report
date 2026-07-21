@@ -180,6 +180,36 @@
         color: #1e293b;
     }
 
+    .attachment-page {
+        margin-top: 2rem;
+        padding-top: 1.25rem;
+        border-top: 2px solid #cbd5e1;
+    }
+
+    .attachment-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .attachment-card {
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 0.75rem;
+        break-inside: avoid;
+        background: white;
+    }
+
+    .attachment-card img {
+        display: block;
+        width: 100%;
+        height: 280px;
+        object-fit: cover;
+        margin-top: 0.5rem;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+    }
+
     @media print {
         @page {
             size: A4 landscape;
@@ -267,6 +297,11 @@
             page-break-inside: avoid;
         }
 
+        .attachment-page {
+            page-break-before: always;
+            border-top: 0;
+        }
+
         /* Sections B, C, stats should stay together */
         .section-b-container, .section-c-container, .stats-container {
             page-break-inside: avoid;
@@ -317,18 +352,20 @@
 <div class="content-header no-print">
     <div>
         <h1 class="page-title">Detail Laporan Harian</h1>
-        <p class="page-subtitle">Site Sungai Putting | Tanggal: {{ $report->date->format('d-m-Y') }}</p>
+        <p class="page-subtitle">Site {{ $report->site_name }} | Tanggal: {{ $report->date->format('d-m-Y') }}</p>
     </div>
     <div style="display: flex; gap: 0.5rem;">
         <a href="{{ route('reports.index') }}" class="btn btn-secondary">Kembali</a>
-        <button onclick="window.print()" class="btn btn-secondary">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="6 9 6 2 18 2 18 9"></polyline>
-                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-                <rect x="6" y="14" width="12" height="8"></rect>
-            </svg>
-            Cetak Laporan
-        </button>
+        @if(!Auth::user()->isFuelman())
+            <button onclick="window.print()" class="btn btn-secondary">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                    <rect x="6" y="14" width="12" height="8"></rect>
+                </svg>
+                Cetak Laporan
+            </button>
+        @endif
         @if(Auth::user()->isFuelman() && in_array($report->status, ['draft', 'rejected']))
             <a href="{{ route('reports.edit', $report->id) }}" class="btn btn-primary">Ubah Laporan</a>
             <form action="{{ route('reports.submit', $report->id) }}" method="POST" style="display: inline;">
@@ -387,7 +424,12 @@
                 <line x1="12" y1="8" x2="12" y2="12"></line>
                 <line x1="12" y1="16" x2="12.01" y2="16"></line>
             </svg>
-            Catatan Penolakan / Revisi:
+            Catatan Penolakan / Revisi
+            @if($report->gl_feedback && !$report->spv_feedback)
+                <span style="font-size: 0.85rem; color: #dc2626; font-weight: 600;">(Ditolak oleh Group Leader)</span>
+            @elseif($report->spv_feedback)
+                <span style="font-size: 0.85rem; color: #dc2626; font-weight: 600;">(Ditolak oleh Supervisor)</span>
+            @endif
         </h3>
         <div class="feedback-content">
             @if($report->gl_feedback)
@@ -411,7 +453,7 @@
         <!-- Header Text -->
         <div class="sheet-title-area">
             <h2>LAPORAN HARIAN KEGIATAN FUELMAN</h2>
-            <h3>WAREHOUSE & INVENTORY SITE SUNGAI PUTTING</h3>
+            <h3>WAREHOUSE & INVENTORY SITE {{ strtoupper($report->site_name) }}</h3>
         </div>
         
         <!-- Right text brand -->
@@ -449,8 +491,8 @@
         </div>
     </div>
 
-    <h3 style="margin-top: 2rem; font-size: 1rem; color: var(--text-primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 0.25rem;">
-        A. LAPORAN HARIAN
+    <h3 style="margin-top: 1rem; margin-bottom: 0; font-size: 1rem; color: var(--text-primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 0.125rem;">
+        A. LAPORAN HARIAN (MAIN TANK)
     </h3>
         <div class="table-responsive">
             <table class="sheet-table" style="border-collapse: collapse; width: 100%;">
@@ -555,10 +597,18 @@
                             </tr>
                         @endforeach
                     @endforeach
+                    @if($report->items->isEmpty())
+                        <tr>
+                            <td colspan="15" style="text-align: center; color: var(--text-muted); font-style: italic; padding: 10px;">
+                                Tidak ada data laporan harian (main tank).
+                            </td>
+                        </tr>
+                    @endif
                 </tbody>
             </table>
         </div>
 
+        @if(false)
         <!-- Right Capacity Statistics Widget -->
         @php
             // Real DB Capacities
@@ -596,7 +646,7 @@
             $grandTotalUsed = $totSpmUsed + $ftUsed;
         @endphp
         <!-- Kapasitas Tangki Widget (Below Section A) -->
-        <h3 style="margin-top: 2rem; font-size: 1rem; color: var(--text-primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 0.25rem;">
+        <h3 style="margin-top: 1rem; margin-bottom: 0; font-size: 1rem; color: var(--text-primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 0.125rem;">
             B. KAPASITAS TANGKI
         </h3>
        
@@ -669,13 +719,11 @@
                 </tbody>
             </table>
         </div>
-                </tbody>
-            </table>
-       
+        @endif
 
-    <!-- SECTION C. TRANSFER SOLAR -->
-    <h3 style="margin-top: 2rem; font-size: 1rem; color: var(--text-primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 0.25rem;">
-        C. TRANSFER SOLAR
+    <!-- SECTION B. TRANSFER SOLAR -->
+    <h3 style="margin-top: 1rem; margin-bottom: 0; font-size: 1rem; color: var(--text-primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 0.125rem;">
+        B. TRANSFER SOLAR
     </h3>
     <div class="table-responsive">
         <table class="sheet-table" style="border-collapse: collapse; width: 100%;">
@@ -719,7 +767,7 @@
                         <td style="text-align: center;">{{ $transfer->spm_akhir !== null ? number_format($transfer->spm_akhir, 1, ',', '.') : '' }}</td>
                         <td style="text-align: center; font-weight: 500;">{{ $transfer->spm_hasil !== null ? number_format($transfer->spm_hasil, 1, ',', '.') : '' }}</td>
                         <td class="val-liter" style="text-align: right; padding-right: 8px;">
-                            {{ $transfer->spm_liter !== null ? number_format($transfer->spm_liter, 0, ',', '.') : '' }}
+                            {{ $transfer->spm_liter !== null ? number_format($transfer->spm_liter, 0, ',', '.') : 'XXXX' }}
                         </td>
                         
                         <!-- FT -->
@@ -727,7 +775,7 @@
                         <td style="text-align: center;">{{ $transfer->ft_akhir !== null ? number_format($transfer->ft_akhir, 1, ',', '.') : '' }}</td>
                         <td style="text-align: center; font-weight: 500;">{{ $transfer->ft_hasil !== null ? number_format($transfer->ft_hasil, 1, ',', '.') : '' }}</td>
                         <td class="val-liter" style="text-align: right; padding-right: 8px;">
-                            {{ $transfer->ft_liter !== null ? number_format($transfer->ft_liter, 0, ',', '.') : '' }}
+                            {{ $transfer->ft_liter !== null ? number_format($transfer->ft_liter, 0, ',', '.') : 'XXXX' }}
                         </td>
                         
                         <!-- FM -->
@@ -743,23 +791,20 @@
                         <td style="text-align: center;">{{ $transfer->lama_transfer }}</td>
                     </tr>
                 @endforeach
-                @if($report->transfers->count() === 0)
-                    @for($i = 0; $i < 4; $i++)
-                        <tr>
-                            <td style="text-align: center;">{{ $i + 1 }}</td>
-                            @for($j = 0; $j < 15; $j++)
-                                <td>&nbsp;</td>
-                            @endfor
-                        </tr>
-                    @endfor
+                @if($report->transfers->isEmpty())
+                    <tr>
+                        <td colspan="17" style="text-align: center; color: var(--text-muted); font-style: italic; padding: 10px;">
+                            Tidak ada data transfer solar.
+                        </td>
+                    </tr>
                 @endif
             </tbody>
         </table>
     </div>
 
-    <!-- SECTION D. PEMAKAIAN FLOWMETER -->
-    <h3 style="margin-top: 2rem; font-size: 1rem; color: var(--text-primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 0.25rem;">
-        D. PEMAKAIAN FLOWMETER
+    <!-- SECTION C. PEMAKAIAN FLOWMETER -->
+    <h3 style="margin-top: 1rem; margin-bottom: 0; font-size: 1rem; color: var(--text-primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 0.125rem;">
+        C. PEMAKAIAN FLOWMETER
     </h3>
     <div class="table-responsive">
         <table class="sheet-table" style="border-collapse: collapse; width: 100%;">
@@ -799,6 +844,7 @@
         </table>
     </div>
 
+    @if(false)
     <!-- BOTTOM STATISTICS SECTION -->
     @php
         // Calculate SELISIH SONDING and TOTAL PENGELUARAN for MT (SPM) and FT groups
@@ -906,6 +952,7 @@
         </div>
     </div>
 
+    @endif
     <!-- TANDA TANGAN (Bottom, Right-Aligned) -->
     <div style="display: flex; justify-content: flex-end; margin-top: 2.5rem; padding-top: 1rem;" class="sheet-signers">
         <div style="display: flex; gap: 2rem; font-size: 9pt;">
@@ -914,7 +961,7 @@
                 <div style="height: 60px;"></div>
                 @if($report->fuelman)
                     <p style="text-decoration: underline; font-weight: 700; margin: 0;">( {{ $report->fuelman->name }} )</p>
-                    <p style="font-size: 7.5pt; color: #94a3b8; margin-top: 2px;">{{ $report->fuelman->employee_id ?? '' }}</p>
+                    <p style="font-size: 7.5pt; color: #94a3b8; margin-top: 2px;">{{ $report->fuelman->employee_id ?? '-' }}</p>
                 @else
                     <p style="font-weight: 700; margin: 0;">(...........)</p>
                 @endif
@@ -924,7 +971,7 @@
                 <div style="height: 60px;"></div>
                 @if($report->gl)
                     <p style="text-decoration: underline; font-weight: 700; margin: 0;">( {{ $report->gl->name }} )</p>
-                    <p style="font-size: 7.5pt; color: #94a3b8; margin-top: 2px;">{{ $report->gl->employee_id ?? '' }}</p>
+                    <p style="font-size: 7.5pt; color: #94a3b8; margin-top: 2px;">{{ $report->gl->employee_id ?? '-' }}</p>
                 @else
                     <p style="font-weight: 700; margin: 0;">(...........)</p>
                 @endif
@@ -934,48 +981,281 @@
                 <div style="height: 60px;"></div>
                 @if($report->spv)
                     <p style="text-decoration: underline; font-weight: 700; margin: 0;">( {{ $report->spv->name }} )</p>
-                    <p style="font-size: 7.5pt; color: #94a3b8; margin-top: 2px;">{{ $report->spv->employee_id ?? '' }}</p>
+                    <p style="font-size: 7.5pt; color: #94a3b8; margin-top: 2px;">{{ $report->spv->employee_id ?? '-' }}</p>
                 @else
                     <p style="font-weight: 700; margin: 0;">(...........)</p>
                 @endif
             </div>
         </div>
     </div>
- </div>
+
+    @if($report->attachments->isNotEmpty())
+        <section class="attachment-page">
+            <h2 style="margin: 0 0 0.25rem; font-size: 14pt;">LAMPIRAN FOTO</h2>
+            <p style="margin: 0 0 1rem; color: #64748b;">Dokumentasi Laporan Harian Fuelman</p>
+            
+            @php
+                $attachments = $report->attachments->sortBy(fn ($attachment) => $attachment->section . ':' . $attachment->attachment_key);
+                $chunks = $attachments->chunk(2); // Split into groups of 2
+            @endphp
+            
+            @foreach($chunks as $chunk)
+                <div class="photo-card" style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 1rem; background: white; margin-bottom: 1rem;">
+                    <div style="display: flex; gap: 1rem;">
+                        @foreach($chunk as $attachment)
+                            <div class="photo-item" style="flex: 1;">
+                                <div style="font-size: 9pt; font-weight: 700; color: #1e293b; margin-bottom: 0.25rem;">Bagian {{ $attachment->section }} — {{ $attachment->section === 'A' ? 'Laporan Harian Main Tank' : 'Transfer Solar' }}</div>
+                                <div style="font-size: 8.5pt; color: #475569; margin-bottom: 0.5rem;">{{ $attachment->context }}</div>
+                                <img src="{{ asset('storage/' . $attachment->path) }}" alt="Lampiran {{ $attachment->context }}" style="display: block; width: 100%; height: 280px; object-fit: contain; border-radius: 6px; border: 1px solid #e2e8f0; background: #f8fafc;">
+                            </div>
+                        @endforeach
+                        
+                        @if($chunk->count() === 1)
+                            <div style="flex: 1;"></div>
+                        @endif
+                    </div>
+                </div>
+            @endforeach
+        </section>
+    @endif
 </div>
 
 <!-- WORKFLOW VERIFICATION / APPROVAL PANELS -->
 @if(Auth::user()->isGl() && $report->status === 'submitted')
-    <div class="review-panel no-print" style="margin-top: 1.5rem;">
-        <h2 class="card-title">Panel Verifikasi Group Leader</h2>
-        <form action="{{ route('reports.verify', $report->id) }}" method="POST">
+    <div class="card-table-container no-print" style="margin-top: 1.5rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #2563eb); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+            </div>
+            <div>
+                <h2 class="card-title" style="margin: 0;">Panel Verifikasi Group Leader</h2>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0.25rem 0 0;">Periksa dan verifikasi laporan harian yang diajukan oleh Fuelman</p>
+            </div>
+        </div>
+        <form action="{{ route('reports.verify', $report->id) }}" method="POST" id="verifyForm">
             @csrf
             <div class="form-group">
                 <label for="feedback">Catatan / Komentar (Wajib jika menolak/revisi)</label>
-                <textarea name="feedback" id="feedback" rows="3" class="form-control" placeholder="Masukkan masukan revisi jika laporan ditolak..."></textarea>
+                <textarea name="feedback" id="gl_feedback" rows="4" class="form-control" placeholder="Masukkan catatan atau masukan revisi jika laporan perlu diperbaiki..."></textarea>
             </div>
-            <div style="display: flex; gap: 0.5rem;">
-                <button type="submit" name="action" value="approve" class="btn btn-success">Verifikasi & Setujui</button>
-                <button type="submit" name="action" value="reject" class="btn btn-danger">Kembalikan untuk Revisi</button>
+            <div style="display: flex; gap: 0.75rem; padding-top: 0.5rem;">
+                <button type="button" onclick="confirmVerifyAction('approve')" class="btn btn-success" style="flex: 1;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Verifikasi & Setujui
+                </button>
+                <button type="button" onclick="confirmVerifyAction('reject')" class="btn btn-danger" style="flex: 1;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                    </svg>
+                    Kembalikan untuk Revisi
+                </button>
             </div>
+            <input type="hidden" name="action" id="verifyAction" value="">
         </form>
     </div>
 @endif
 
 @if(Auth::user()->isSpv() && $report->status === 'verified')
-    <div class="review-panel no-print" style="margin-top: 1.5rem;">
-        <h2 class="card-title">Panel Persetujuan Supervisor</h2>
-        <form action="{{ route('reports.approve', $report->id) }}" method="POST">
+    <div class="card-table-container no-print" style="margin-top: 1.5rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #059669); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                    <path d="M2 17l10 5 10-5"></path>
+                    <path d="M2 12l10 5 10-5"></path>
+                </svg>
+            </div>
+            <div>
+                <h2 class="card-title" style="margin: 0;">Panel Persetujuan Supervisor</h2>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0.25rem 0 0;">Berikan persetujuan final untuk laporan yang telah diverifikasi GL</p>
+            </div>
+        </div>
+        <form action="{{ route('reports.approve', $report->id) }}" method="POST" id="approveForm">
             @csrf
             <div class="form-group">
                 <label for="feedback">Catatan / Komentar (Wajib jika menolak/revisi)</label>
-                <textarea name="feedback" id="feedback" rows="3" class="form-control" placeholder="Masukkan masukan revisi jika laporan ditolak..."></textarea>
+                <textarea name="feedback" id="spv_feedback" rows="4" class="form-control" placeholder="Masukkan catatan atau masukan revisi jika laporan perlu diperbaiki..."></textarea>
             </div>
-            <div style="display: flex; gap: 0.5rem;">
-                <button type="submit" name="action" value="approve" class="btn btn-success">Approve Laporan (Final)</button>
-                <button type="submit" name="action" value="reject" class="btn btn-danger">Kembalikan untuk Revisi</button>
+            <div style="display: flex; gap: 0.75rem; padding-top: 0.5rem;">
+                <button type="button" onclick="confirmApproveAction('approve')" class="btn btn-success" style="flex: 1;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    Approve Laporan (Final)
+                </button>
+                <button type="button" onclick="confirmApproveAction('reject')" class="btn btn-danger" style="flex: 1;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                    </svg>
+                    Kembalikan untuk Revisi
+                </button>
             </div>
+            <input type="hidden" name="action" id="approveAction" value="">
         </form>
     </div>
 @endif
+
+<!-- Verification Confirmation Modal -->
+<div id="verifyConfirmModal" class="custom-modal-overlay no-print">
+    <div class="custom-modal-content">
+        <h3 class="custom-modal-title" id="verifyModalTitle">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <span id="verifyModalTitleText">Konfirmasi Verifikasi</span>
+        </h3>
+        <p class="custom-modal-text" id="verifyModalMessage">Apakah Anda yakin ingin memverifikasi laporan ini?</p>
+        <div class="custom-modal-actions">
+            <button type="button" class="btn btn-secondary" style="padding: 0.5rem 1rem;" onclick="closeVerifyConfirm()">Batal</button>
+            <button type="button" class="btn" id="btnConfirmVerify" style="padding: 0.5rem 1rem;">Lanjutkan</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function showSnackbar(message, type = 'error') {
+    const snackbar = document.getElementById('snackbar');
+    snackbar.textContent = message;
+    snackbar.className = 'snackbar show ' + type;
+    
+    setTimeout(function() {
+        snackbar.className = snackbar.className.replace('show', '');
+    }, 3000);
+}
+
+let currentFormToSubmit = null;
+
+function confirmVerifyAction(action) {
+    const feedback = document.getElementById('gl_feedback');
+    const feedbackValue = feedback ? feedback.value.trim() : '';
+    
+    // Validate feedback for reject action
+    if (action === 'reject' && feedbackValue === '') {
+        showSnackbar('Catatan / komentar wajib diisi saat menolak atau meminta revisi!', 'warning');
+        feedback.focus();
+        return false;
+    }
+    
+    // Set form to submit
+    currentFormToSubmit = 'verify';
+    
+    // Show confirmation modal
+    const modal = document.getElementById('verifyConfirmModal');
+    const modalTitle = document.getElementById('verifyModalTitleText');
+    const modalMessage = document.getElementById('verifyModalMessage');
+    const confirmBtn = document.getElementById('btnConfirmVerify');
+    const titleIcon = modal.querySelector('.custom-modal-title svg');
+    
+    if (action === 'approve') {
+        titleIcon.style.color = '#10b981';
+        modalTitle.textContent = 'Konfirmasi Verifikasi';
+        modalMessage.textContent = 'Apakah Anda yakin ingin memverifikasi dan menyetujui laporan ini? Laporan akan diteruskan ke Supervisor.';
+        confirmBtn.className = 'btn btn-success';
+        confirmBtn.style.padding = '0.5rem 1rem';
+        confirmBtn.textContent = 'Ya, Verifikasi';
+    } else {
+        titleIcon.style.color = '#ef4444';
+        modalTitle.textContent = 'Konfirmasi Penolakan';
+        modalMessage.textContent = 'Apakah Anda yakin ingin menolak laporan ini? Laporan akan dikembalikan ke Fuelman untuk revisi.';
+        confirmBtn.className = 'btn btn-danger';
+        confirmBtn.style.padding = '0.5rem 1rem';
+        confirmBtn.textContent = 'Ya, Tolak';
+    }
+    
+    document.getElementById('verifyAction').value = action;
+    modal.classList.add('active');
+}
+
+function confirmApproveAction(action) {
+    const feedback = document.getElementById('spv_feedback');
+    const feedbackValue = feedback ? feedback.value.trim() : '';
+    
+    // Validate feedback for reject action
+    if (action === 'reject' && feedbackValue === '') {
+        showSnackbar('Catatan / komentar wajib diisi saat menolak atau meminta revisi!', 'warning');
+        feedback.focus();
+        return false;
+    }
+    
+    // Set form to submit
+    currentFormToSubmit = 'approve';
+    
+    // Show confirmation modal
+    const modal = document.getElementById('verifyConfirmModal');
+    const modalTitle = document.getElementById('verifyModalTitleText');
+    const modalMessage = document.getElementById('verifyModalMessage');
+    const confirmBtn = document.getElementById('btnConfirmVerify');
+    const titleIcon = modal.querySelector('.custom-modal-title svg');
+    
+    if (action === 'approve') {
+        titleIcon.style.color = '#10b981';
+        modalTitle.textContent = 'Konfirmasi Approval';
+        modalMessage.textContent = 'Apakah Anda yakin ingin menyetujui laporan ini? Ini adalah persetujuan final dan laporan akan berstatus Approved.';
+        confirmBtn.className = 'btn btn-success';
+        confirmBtn.style.padding = '0.5rem 1rem';
+        confirmBtn.textContent = 'Ya, Approve';
+    } else {
+        titleIcon.style.color = '#ef4444';
+        modalTitle.textContent = 'Konfirmasi Penolakan';
+        modalMessage.textContent = 'Apakah Anda yakin ingin menolak laporan ini? Laporan akan dikembalikan ke Fuelman untuk revisi.';
+        confirmBtn.className = 'btn btn-danger';
+        confirmBtn.style.padding = '0.5rem 1rem';
+        confirmBtn.textContent = 'Ya, Tolak';
+    }
+    
+    document.getElementById('approveAction').value = action;
+    modal.classList.add('active');
+}
+
+function closeVerifyConfirm() {
+    const modal = document.getElementById('verifyConfirmModal');
+    modal.classList.remove('active');
+    currentFormToSubmit = null;
+}
+
+function submitVerifyForm() {
+    if (currentFormToSubmit === 'verify') {
+        const form = document.getElementById('verifyForm');
+        if (form) {
+            form.submit();
+        }
+    } else if (currentFormToSubmit === 'approve') {
+        const form = document.getElementById('approveForm');
+        if (form) {
+            form.submit();
+        }
+    }
+    closeVerifyConfirm();
+}
+
+// Wait for DOM to be fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Confirm button click handler
+    const btnConfirm = document.getElementById('btnConfirmVerify');
+    if (btnConfirm) {
+        btnConfirm.addEventListener('click', submitVerifyForm);
+    }
+    
+    // Close modal on outside click
+    const modal = document.getElementById('verifyConfirmModal');
+    if (modal) {
+        modal.addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeVerifyConfirm();
+            }
+        });
+    }
+});
+</script>
 @endsection

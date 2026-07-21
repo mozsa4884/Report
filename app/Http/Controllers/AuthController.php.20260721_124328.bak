@@ -18,14 +18,9 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string'],
+            'email' => 'required|email',
+            'password' => 'required',
         ]);
-
-        // Email addresses are case-insensitive. Normalizing the value also
-        // prevents accidental leading/trailing spaces from causing a valid
-        // account to be rejected.
-        $credentials['email'] = strtolower(trim($credentials['email']));
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();

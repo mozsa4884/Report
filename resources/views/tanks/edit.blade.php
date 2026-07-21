@@ -33,7 +33,15 @@
         
         <div class="form-group">
             <label for="main_hole">Main Hole</label>
-            <input type="text" name="main_hole" id="main_hole" class="form-control" value="{{ old('main_hole', $tank->main_hole) }}" required>
+            @php($selectedMainHole = old('main_hole', $tank->main_hole))
+            <select name="main_hole" id="main_hole" class="form-control" required>
+                <option value="">Pilih Main Hole</option>
+                <option value="TENGAH" @selected($selectedMainHole === 'TENGAH')>TENGAH</option>
+                <option value="(DEPAN + BELAKANG) / 2" @selected($selectedMainHole === '(DEPAN + BELAKANG) / 2')>(DEPAN + BELAKANG) / 2</option>
+                @if(!in_array($selectedMainHole, ['TENGAH', '(DEPAN + BELAKANG) / 2'], true))
+                    <option value="{{ $selectedMainHole }}" selected>{{ $selectedMainHole }}</option>
+                @endif
+            </select>
         </div>
 
         <div class="form-group">

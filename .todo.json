@@ -1,0 +1,17 @@
+[
+  {
+    "content": "Inspect tank monitoring view and layout files",
+    "active_form": "Inspecting the tank monitoring page view and layout files",
+    "status": "in_progress"
+  },
+  {
+    "content": "Fix scroll and overlapping components",
+    "active_form": "Fixing scroll and overflow/covering components in CSS/Blade",
+    "status": "pending"
+  },
+  {
+    "content": "Verify the fixes and run tests",
+    "active_form": "Verifying the fixes and running tests",
+    "status": "pending"
+  }
+]

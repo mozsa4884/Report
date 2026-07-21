@@ -12,7 +12,7 @@
     <a href="{{ route('reports.show', $report->id) }}" class="btn btn-secondary">Kembali</a>
 </div>
 
-<form action="{{ route('reports.update', $report->id) }}" method="POST" id="reportForm">
+<form action="{{ route('reports.update', $report->id) }}" method="POST" id="reportForm" enctype="multipart/form-data">
     @csrf
     @method('PUT')
 
@@ -23,7 +23,7 @@
             </div>
             <div class="sheet-title-area" style="text-align: center;">
                 <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: 0.5px;">LAPORAN HARIAN KEGIATAN FUELMAN</h2>
-                <h3 style="font-size: 0.95rem; color: #475569; font-weight: 600; margin-top: 0.25rem;">WAREHOUSE & INVENTORY SITE SUNGAI PUTTING</h3>
+                <h3 style="font-size: 0.95rem; color: #475569; font-weight: 600; margin-top: 0.25rem;">WAREHOUSE & INVENTORY</h3>
             </div>
             <div class="sheet-logo-right" style="display: flex; justify-content: flex-end;">
                 <img src="{{ asset('logo-agm.png') }}" alt="AGM Logo" style="height: 40px; width: auto; object-fit: contain;">
@@ -32,31 +32,38 @@
 
         <div class="sheet-meta-grid">
             <div class="form-group" style="margin: 0;">
+                <label for="site_name" style="margin-bottom: 4px;">NAMA SITE / LOKASI</label>
+                <input type="text" name="site_name" id="site_name" class="form-control" value="{{ old('site_name', $report->site_name) }}" placeholder="Contoh: Sungai Putting" required>
+            </div>
+            <div class="form-group" style="margin: 0;">
                 <label for="date" style="margin-bottom: 4px;">TANGGAL LAPORAN</label>
                 <input type="date" name="date" id="date" class="form-control" value="{{ old('date', $report->date->format('Y-m-d')) }}" required>
             </div>
-            <div class="form-group" style="margin: 0; display: flex; align-items: flex-end;">
-                <p style="font-size: 0.85rem; color: var(--text-secondary);">
-                    * Kolom abu-abu akan terisi otomatis berdasarkan perhitungan formula.
-                </p>
-            </div>
+        </div>
+        
+        <div style="padding: 0.75rem 1rem; background: linear-gradient(135deg, #dbeafe, #bfdbfe); border-radius: 8px; border-left: 4px solid #3b82f6; margin-top: 1rem;">
+            <p style="font-size: 0.85rem; color: #1e40af; margin: 0;">
+                <strong>Info:</strong> Kolom abu-abu akan terisi otomatis berdasarkan perhitungan formula.
+            </p>
         </div>
 
-        <h3 style="margin-top: 2rem; margin-bottom: 0.5rem; font-size: 1rem; color: var(--text-primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 0.25rem;">
-            A. LAPORAN HARIAN
+        <h3 style="margin-top: 2rem; margin-bottom: 0.25rem; font-size: 1rem; color: var(--text-primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 0.25rem;">
+            A. LAPORAN HARIAN (MAIN TANK)
         </h3>
         <div>
         <div class="table-responsive">
-            <table class="sheet-table">
+            <table class="sheet-table report-item-table">
                 <thead>
                     <tr>
                         <th rowspan="2" style="width: 40px;">NO</th>
-                        <th rowspan="2" style="width: 100px;">KODE TANGKI</th>
+                        <th rowspan="2" class="tank-code-heading" style="width: 180px;">KODE TANGKI</th>
                         <th rowspan="2" style="width: 120px;">MAIN HOLE</th>
                         <th colspan="4" class="section-pagi">SONDING PAGI</th>
                         <th colspan="4" class="section-sore">SONDING SORE</th>
                         <th colspan="3" class="section-fm">ANGKA FM KECIL</th>
                         <th rowspan="2" style="width: 180px;">KETERANGAN</th>
+                        <th rowspan="2" class="photo-upload-heading" style="width: 260px;">FOTO (MAKS. 2)</th>
+                        <th rowspan="2" style="width: 70px;">AKSI</th>
                     </tr>
                     <tr>
                         <th class="section-pagi" style="width: 80px;">SONDING (cm)</th>
@@ -72,6 +79,8 @@
                         <th class="section-fm" style="width: 100px;">JUMLAH PAKAI</th>
                     </tr>
                 </thead>
+                @include('reports.partials.report-item-rows')
+                @if(false)
                 <tbody>
                     @foreach($tanks as $index => $tank)
                         @php
@@ -104,7 +113,7 @@
                                        data-tank-code="{{ $tank->code }}" 
                                        data-main-hole="{{ $tank->main_hole }}" 
                                        data-type="liter_pagi" 
-                                       value="{{ old("items.{$index}.liter_pagi", $item && $item->liter_pagi !== null ? $item->liter_pagi : 'XXXX') }}"
+                                       value="{{ old("items.{$index}.liter_pagi", $item && $item->liter_pagi !== null ? $item->liter_pagi : '-') }}"
                                        readonly>
                             </td>
                             <td>
@@ -146,7 +155,7 @@
                                        data-tank-code="{{ $tank->code }}" 
                                        data-main-hole="{{ $tank->main_hole }}" 
                                        data-type="liter_sore" 
-                                       value="{{ old("items.{$index}.liter_sore", $item && $item->liter_sore !== null ? $item->liter_sore : 'XXXX') }}"
+                                       value="{{ old("items.{$index}.liter_sore", $item && $item->liter_sore !== null ? $item->liter_sore : '-') }}"
                                        readonly>
                             </td>
                             <td>
@@ -216,12 +225,15 @@
                         </tr>
                     @endforeach
                 </tbody>
+                @endif
             </table>
         </div>
         </div>
+<button type="button" id="addReportItemRow" class="btn btn-secondary" style="display: block; width: 100%; margin-top: 0.75rem;">+ Tambah Tangki</button>
 
+        @if(false)
         <!-- B. KAPASITAS TANGKI Summary Widget -->
-        <h3 style="margin-top: 2rem; margin-bottom: 0.5rem; font-size: 1rem; color: var(--text-primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 0.25rem;">
+        <h3 style="margin-top: 2rem; margin-bottom: 0.25rem; font-size: 1rem; color: var(--text-primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 0.25rem;">
                 B. KAPASITAS TANGKI
             </h3>
 
@@ -312,12 +324,13 @@
             </table>
             </div>
 
-        <!-- SECTION C. TRANSFER SOLAR -->
-        <h3 style="margin-top: 2rem; margin-bottom: 0.5rem; font-size: 1rem; color: var(--text-primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 0.25rem;">
-            C. TRANSFER SOLAR
+        @endif
+        <!-- SECTION B. TRANSFER SOLAR -->
+        <h3 style="margin-top: 2rem; margin-bottom: 0.25rem; font-size: 1rem; color: var(--text-primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 0.25rem;">
+            B. TRANSFER SOLAR
         </h3>
         <div class="table-responsive">
-            <table class="sheet-table">
+            <table class="sheet-table report-transfer-table">
                 <thead>
                     <tr>
                         <th rowspan="2" style="width: 40px;">NO</th>
@@ -329,10 +342,12 @@
                         <th colspan="3">FLOW METER</th>
                         <th colspan="2">JAM TRANSFER</th>
                         <th rowspan="2" style="width: 90px;">LAMA TRANSFER</th>
+                        <th rowspan="2" class="photo-upload-heading" style="width: 260px;">FOTO (MAKS. 2)</th>
+                        <th rowspan="2" style="width: 70px;">AKSI</th>
                     </tr>
                     <tr>
-                        <th>DARI</th>
-                        <th>KE</th>
+                        <th style="min-width: 150px;">DARI</th>
+                        <th style="min-width: 150px;">KE</th>
                         <th>AWAL</th>
                         <th>AKHIR</th>
                         <th>HASIL</th>
@@ -348,22 +363,26 @@
                 </thead>
                 @php
                     $transferTankCodes = $tanks->pluck('code')->unique()->values();
-                    $transferRowCount = max($transferTankCodes->count(), $transfers->count(), count(old('transfers', [])));
+                    $transferTankIdsByCode = $tanks->groupBy('code')->map(fn($group) => $group->first()->id);
+                    $transferRowCount = max(1, $transfers->count(), count(old('transfers', [])));
                 @endphp
-                <tbody>
+                <tbody id="transferRows">
                     @for($i = 0; $i < $transferRowCount; $i++)
                         @php
                             $tData = isset($transfers[$i]) ? $transfers[$i] : null;
-                            $dariTangki = old("transfers.{$i}.dari_tangki", $tData ? $tData->dari_tangki : ($transferTankCodes->get($i) ?? ''));
+                            $dariTangki = old("transfers.{$i}.dari_tangki", $tData ? $tData->dari_tangki : '');
                             $keTangki = old("transfers.{$i}.ke_tangki", $tData ? $tData->ke_tangki : '');
                         @endphp
                         <tr>
-                            <td style="text-align: center;">{{ $i + 1 }}</td>
+                            <td class="row-number" style="text-align: center;">{{ $i + 1 }}</td>
                             <td>
+                                @if($tData)
+                                    <input type="hidden" name="transfers[{{ $i }}][attachment_key]" value="transfer-{{ $tData->id }}">
+                                @endif
                                 <select name="transfers[{{ $i }}][dari_tangki]" class="sheet-input">
                                     <option value="">Pilih</option>
                                     @foreach($transferTankCodes as $tankCode)
-                                        <option value="{{ $tankCode }}" @selected($dariTangki === $tankCode)>{{ $tankCode }}</option>
+                                        <option value="{{ $tankCode }}" data-tank-id="{{ $transferTankIdsByCode->get($tankCode) }}" @selected($dariTangki === $tankCode)>{{ $tankCode }}</option>
                                     @endforeach
                                 </select>
                             </td>
@@ -371,7 +390,7 @@
                                 <select name="transfers[{{ $i }}][ke_tangki]" class="sheet-input">
                                     <option value="">Pilih</option>
                                     @foreach($transferTankCodes as $tankCode)
-                                        <option value="{{ $tankCode }}" @selected($keTangki === $tankCode)>{{ $tankCode }}</option>
+                                        <option value="{{ $tankCode }}" data-tank-id="{{ $transferTankIdsByCode->get($tankCode) }}" @selected($keTangki === $tankCode)>{{ $tankCode }}</option>
                                     @endforeach
                                 </select>
                             </td>
@@ -386,7 +405,7 @@
                                 <input type="number" step="0.01" name="transfers[{{ $i }}][spm_hasil]" class="sheet-input read-only" data-index="{{ $i }}" data-trans-type="spm_hasil" readonly value="{{ old("transfers.{$i}.spm_hasil", $tData ? $tData->spm_hasil : '') }}">
                             </td>
                             <td>
-                                <input type="number" step="0.01" name="transfers[{{ $i }}][spm_liter]" class="sheet-input" data-index="{{ $i }}" data-trans-type="spm_liter" value="{{ old("transfers.{$i}.spm_liter", $tData ? $tData->spm_liter : '') }}">
+                                <input type="text" name="transfers[{{ $i }}][spm_liter]" class="sheet-input read-only" data-index="{{ $i }}" data-trans-type="spm_liter" value="{{ old("transfers.{$i}.spm_liter", $tData?->spm_liter ?? '-') }}" readonly>
                             </td>
                             <!-- FT Sounding -->
                             <td>
@@ -399,7 +418,7 @@
                                 <input type="number" step="0.01" name="transfers[{{ $i }}][ft_hasil]" class="sheet-input read-only" data-index="{{ $i }}" data-trans-type="ft_hasil" readonly value="{{ old("transfers.{$i}.ft_hasil", $tData ? $tData->ft_hasil : '') }}">
                             </td>
                             <td>
-                                <input type="number" step="0.01" name="transfers[{{ $i }}][ft_liter]" class="sheet-input" data-index="{{ $i }}" data-trans-type="ft_liter" value="{{ old("transfers.{$i}.ft_liter", $tData ? $tData->ft_liter : '') }}">
+                                <input type="text" name="transfers[{{ $i }}][ft_liter]" class="sheet-input read-only" data-index="{{ $i }}" data-trans-type="ft_liter" value="{{ old("transfers.{$i}.ft_liter", $tData?->ft_liter ?? '-') }}" readonly>
                             </td>
                             <!-- Flow Meter -->
                             <td>
@@ -421,18 +440,45 @@
                             <td>
                                 <input type="text" name="transfers[{{ $i }}][lama_transfer]" class="sheet-input read-only" placeholder="" data-index="{{ $i }}" data-trans-type="lama_transfer" value="{{ old("transfers.{$i}.lama_transfer", $tData ? $tData->lama_transfer : '') }}" readonly>
                             </td>
+                            <td class="photo-upload-cell">
+                                @php
+                                    $existingAttachments = $tData
+                                        ? $report->attachments->where('section', 'B')->where('attachment_key', "transfer-{$tData->id}")
+                                        : collect();
+                                @endphp
+                                <div class="photo-selected-list" data-photo-selected></div>
+                                @if($existingAttachments->isNotEmpty())
+                                    <div class="saved-photo-count">{{ $existingAttachments->count() }} foto tersimpan</div>
+                                    <div class="saved-photo-list">
+                                        @foreach($existingAttachments as $attachment)
+                                            <div class="saved-photo-card" data-attachment-id="{{ $attachment->id }}">
+                                                <img src="{{ Storage::disk(config('filesystems.default') === 'local' ? 'public' : config('filesystems.default'))->url($attachment->path) }}" alt="Foto transfer">
+                                                <button type="button" class="photo-remove-button" data-delete-attachment="{{ $attachment->id }}" title="Hapus foto" aria-label="Hapus foto">
+                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m-6 5v6m4-6v6"></path></svg>
+                                                </button>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+                                <label class="photo-upload-button">
+                                    Pilih foto
+                                    <input type="file" name="transfers[{{ $i }}][photos][]" accept="image/jpeg,image/png,image/webp" multiple data-photo-input>
+                                </label>
+                            </td>
+                            <td class="row-action" style="text-align: center;"></td>
                         </tr>
                     @endfor
                 </tbody>
             </table>
         </div>
+        <button type="button" id="addTransferRow" class="btn btn-secondary" style="margin-top: 0.75rem;">+ Tambah Transfer</button>
 
-        <!-- SECTION D. PEMAKAIAN FLOWMETER -->
-        <h3 style="margin-top: 2rem; margin-bottom: 0.5rem; font-size: 1rem; color: var(--text-primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 0.25rem;">
-            D. PEMAKAIAN FLOWMETER
+        <!-- SECTION C. PEMAKAIAN FLOWMETER -->
+        <h3 style="margin-top: 2rem; margin-bottom: 0.25rem; font-size: 1rem; color: var(--text-primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 0.25rem;">
+            C. PEMAKAIAN FLOWMETER
         </h3>
         <div class="table-responsive">
-            <table class="sheet-table" style="max-width: 800px;">
+            <table class="sheet-table" style="width: 100%;">
                 <thead>
                     <tr>
                         <th style="width: 40px;">NO</th>
@@ -442,6 +488,7 @@
                         <th>AWAL PAGI</th>
                         <th>AKHIR SORE</th>
                         <th>JUMLAH PAKAI</th>
+                        <th style="width: 70px;">AKSI</th>
                     </tr>
                 </thead>
                 <tbody id="flowmeterRows">
@@ -450,7 +497,8 @@
                             $fData = isset($flowmeters[$i]) ? $flowmeters[$i] : null;
                         @endphp
                         <tr>
-                            <td style="text-align: center;">{{ $i + 1 }}</td>
+                            <td class="row-number" style="text-align: center;">{{ $i + 1 }}</td>
+                            <td class="row-action" style="text-align: center;"></td>
                             <td>
                                 <input type="text" name="flowmeters[{{ $i }}][unit]" class="sheet-input" value="{{ old("flowmeters.{$i}.unit", $fData ? $fData->unit : '') }}">
                             </td>
@@ -495,6 +543,39 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const reportForm = document.getElementById('reportForm');
+    const rowTemplates = new Map();
+
+    function refreshDynamicRows(rowsContainer, fieldGroup) {
+        rowsContainer.querySelectorAll('tr').forEach((row, index) => {
+            const numberCell = row.querySelector('.row-number') || row.querySelector('td');
+            let actionCell = row.querySelector('.row-action');
+            if (!actionCell) {
+                actionCell = document.createElement('td');
+                actionCell.className = 'row-action';
+                actionCell.style.textAlign = 'center';
+                numberCell.insertAdjacentElement('afterend', actionCell);
+            }
+            numberCell.textContent = index + 1;
+            actionCell.innerHTML = '<button type="button" class="row-remove-button" data-remove-row title="Hapus baris" aria-label="Hapus baris"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m-6 5v6m4-6v6"></path></svg></button>';
+            row.appendChild(actionCell);
+
+            row.querySelectorAll('input, select').forEach(field => {
+                field.name = field.name.replace(new RegExp(`${fieldGroup}\\[\\d+\\]`), `${fieldGroup}[${index}]`);
+                if (field.dataset.index !== undefined) field.dataset.index = index;
+            });
+        });
+    }
+
+    function enableRowRemoval(rowsContainer, fieldGroup) {
+        rowTemplates.set(rowsContainer, rowsContainer.querySelector('tr').cloneNode(true));
+        refreshDynamicRows(rowsContainer, fieldGroup);
+        rowsContainer.addEventListener('click', event => {
+            const removeButton = event.target.closest('[data-remove-row]');
+            if (!removeButton) return;
+            removeButton.closest('tr').remove();
+            refreshDynamicRows(rowsContainer, fieldGroup);
+        });
+    }
     
     // Select SPM3 elements
     const depanSoundingPagi = document.querySelector('input[data-tank-code="SPM3"][data-main-hole="DEPAN"][data-type="sounding_pagi"]');
@@ -636,7 +717,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (data.volume !== null && data.volume !== undefined) {
                         targetLiterInput.value = data.volume;
                     } else {
-                        targetLiterInput.value = 'XXXX';
+                        targetLiterInput.value = '-';
                     }
                     
                     // If it's SPM3, trigger average recalculation
@@ -685,6 +766,58 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    const reportItemRows = document.getElementById('reportItemRows');
+    enableRowRemoval(reportItemRows, 'items');
+    const updateItemMainHole = row => {
+        const select = row.querySelector('[data-item-type="tank_id"]');
+        row.querySelector('.item-main-hole').textContent = select.selectedOptions[0]?.dataset.mainHole || '-';
+    };
+    reportItemRows.querySelectorAll('tr').forEach(updateItemMainHole);
+    const updateItemCalculations = row => {
+        const pagi = parseFloat(row.querySelector('[data-item-type="fm_pagi"]').value);
+        const sore = parseFloat(row.querySelector('[data-item-type="fm_sore"]').value);
+        row.querySelector('[data-item-type="fm_pakai"]').value = !isNaN(pagi) && !isNaN(sore) ? sore - pagi : '';
+    };
+
+    reportItemRows.addEventListener('input', event => {
+        if (event.target.matches('[data-item-type="fm_pagi"], [data-item-type="fm_sore"]')) {
+            updateItemCalculations(event.target.closest('tr'));
+        }
+    });
+    reportItemRows.addEventListener('change', event => {
+        if (event.target.matches('[data-item-type="tank_id"]')) {
+            updateItemMainHole(event.target.closest('tr'));
+            return;
+        }
+        if (!event.target.matches('[data-item-type="sounding_pagi"], [data-item-type="sounding_sore"]')) return;
+        const row = event.target.closest('tr');
+        const tankId = row.querySelector('[data-item-type="tank_id"]').value;
+        const sounding = parseFloat(event.target.value);
+        if (!tankId || isNaN(sounding)) return;
+
+        const liter = row.querySelector(event.target.dataset.itemType === 'sounding_pagi' ? '[data-item-type="liter_pagi"]' : '[data-item-type="liter_sore"]');
+        fetch(`/api/tanks/${tankId}/volume?sounding=${sounding}`)
+            .then(response => response.json())
+            .then(data => liter.value = data.volume ?? 'XXXX')
+            .catch(() => liter.value = 'XXXX');
+    });
+    document.getElementById('addReportItemRow').addEventListener('click', () => {
+        const index = reportItemRows.querySelectorAll('tr').length;
+        const row = (reportItemRows.querySelector('tr') || rowTemplates.get(reportItemRows)).cloneNode(true);
+        row.querySelector('td').textContent = index + 1;
+        row.querySelectorAll('input, select').forEach(field => {
+            field.name = field.name.replace(/items\[\d+\]/, `items[${index}]`);
+            field.value = '';
+        });
+        row.querySelector('[data-photo-selected]').replaceChildren();
+        row.querySelectorAll('.saved-photo-count, .saved-photo-list').forEach(element => element.remove());
+        row.querySelector('input[name$="[attachment_key]"]')?.remove();
+        row.querySelector('[data-item-type="tank_id"]').selectedIndex = 0;
+        updateItemMainHole(row);
+        reportItemRows.appendChild(row);
+        refreshDynamicRows(reportItemRows, 'items');
+    });
+
     // --- Section B: Transfer Solar Autocalculations ---
     function calculateLamaTransfer(index) {
         const mulaiEl = document.querySelector(`input[data-index="${index}"][data-trans-type="jam_mulai"]`);
@@ -707,10 +840,44 @@ document.addEventListener('DOMContentLoaded', function () {
         lamaEl.value = jam > 0 && menit > 0 ? `${jam} jam ${menit} menit` : jam > 0 ? `${jam} jam` : `${menit} menit`;
     }
 
-    const transInputs = document.querySelectorAll('input[data-trans-type]');
-    transInputs.forEach(input => {
-        input.addEventListener('input', function() {
-            const index = this.dataset.index;
+    function calculateTransferLiters(row) {
+        const dariSelect = row.querySelector('select[name$="[dari_tangki]"]');
+        const tankId = dariSelect?.selectedOptions[0]?.dataset.tankId;
+        const calculations = [
+            ['spm_awal', 'spm_akhir', 'spm_liter'],
+            ['ft_awal', 'ft_akhir', 'ft_liter'],
+        ];
+
+        calculations.forEach(([awalType, akhirType, literType]) => {
+            const awal = parseFloat(row.querySelector(`[data-trans-type="${awalType}"]`).value);
+            const akhir = parseFloat(row.querySelector(`[data-trans-type="${akhirType}"]`).value);
+            const liter = row.querySelector(`[data-trans-type="${literType}"]`);
+
+            if (!tankId || isNaN(awal) || isNaN(akhir)) {
+                liter.value = '';
+                return;
+            }
+
+            Promise.all([
+                fetch(`/api/tanks/${tankId}/volume?sounding=${awal}`).then(response => response.json()),
+                fetch(`/api/tanks/${tankId}/volume?sounding=${akhir}`).then(response => response.json()),
+            ])
+                .then(([awalData, akhirData]) => {
+                    if (awalData.volume === null || awalData.volume === undefined || akhirData.volume === null || akhirData.volume === undefined) {
+                        liter.value = 'XXXX';
+                        return;
+                    }
+                    liter.value = Math.abs(awalData.volume - akhirData.volume).toFixed(1);
+                })
+                .catch(() => liter.value = 'XXXX');
+        });
+    }
+
+    const transferRows = document.getElementById('transferRows');
+    enableRowRemoval(transferRows, 'transfers');
+    transferRows.addEventListener('input', event => {
+        if (!event.target.matches('input[data-trans-type]')) return;
+        const index = event.target.dataset.index;
             
             // 1. SPM Hasil: Awal - Akhir
             const spmAwalEl = document.querySelector(`input[data-index="${index}"][data-trans-type="spm_awal"]`);
@@ -755,9 +922,32 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             calculateLamaTransfer(index);
-        });
+            calculateTransferLiters(event.target.closest('tr'));
+    });
+    transferRows.addEventListener('change', event => {
+        if (event.target.matches('select[name$="[dari_tangki]"]')) {
+            calculateTransferLiters(event.target.closest('tr'));
+        }
     });
     document.querySelectorAll('input[data-trans-type="jam_mulai"]').forEach(input => calculateLamaTransfer(input.dataset.index));
+
+    document.getElementById('addTransferRow').addEventListener('click', () => {
+        const index = transferRows.querySelectorAll('tr').length;
+        const row = (transferRows.querySelector('tr') || rowTemplates.get(transferRows)).cloneNode(true);
+
+        row.querySelector('td').textContent = index + 1;
+        row.querySelectorAll('input, select').forEach(field => {
+            field.name = field.name.replace(/transfers\[\d+\]/, `transfers[${index}]`);
+            if (field.dataset.index !== undefined) field.dataset.index = index;
+            field.value = '';
+        });
+        row.querySelectorAll('select').forEach(field => field.selectedIndex = 0);
+        row.querySelector('[data-photo-selected]').replaceChildren();
+        row.querySelectorAll('.saved-photo-count, .saved-photo-list').forEach(element => element.remove());
+        row.querySelector('input[name$="[attachment_key]"]')?.remove();
+        transferRows.appendChild(row);
+        refreshDynamicRows(transferRows, 'transfers');
+    });
 
     // --- Section C: Pemakaian Flowmeter ---
     function calculateFlowmeterUsage(index) {
@@ -772,6 +962,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     const flowmeterRows = document.getElementById('flowmeterRows');
+    enableRowRemoval(flowmeterRows, 'flowmeters');
     flowmeterRows.addEventListener('input', event => {
         if (event.target.matches('input[data-flow-type="awal_pagi"], input[data-flow-type="akhir_sore"]')) {
             calculateFlowmeterUsage(event.target.dataset.index);
@@ -791,7 +982,84 @@ document.addEventListener('DOMContentLoaded', function () {
             <td><input type="number" step="0.01" name="flowmeters[${index}][akhir_sore]" class="sheet-input" data-index="${index}" data-flow-type="akhir_sore"></td>
             <td><input type="number" step="1" name="flowmeters[${index}][jumlah_pakai]" class="sheet-input read-only" data-index="${index}" data-flow-type="jumlah_pakai" readonly></td>`;
         flowmeterRows.appendChild(row);
+        refreshDynamicRows(flowmeterRows, 'flowmeters');
     });
+
+    const syncSelectedPhotos = input => {
+        const transfer = new DataTransfer();
+        (input._selectedPhotos ?? []).forEach(file => transfer.items.add(file));
+        input.files = transfer.files;
+    };
+
+    const renderSelectedPhotos = input => {
+        const cell = input.closest('.photo-upload-cell');
+        const list = cell.querySelector('[data-photo-selected]');
+        const files = input._selectedPhotos ?? Array.from(input.files);
+        input._selectedPhotos = files;
+        syncSelectedPhotos(input);
+        cell.querySelector('.photo-upload-button').hidden = files.length + cell.querySelectorAll('.saved-photo-card').length >= 2;
+
+        list.replaceChildren();
+        files.forEach((file, index) => {
+            const item = document.createElement('div');
+            item.className = 'photo-selected-item';
+            const name = document.createElement('span');
+            name.textContent = file.name;
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.className = 'photo-remove-button';
+            remove.dataset.removeSelectedPhoto = index;
+            remove.title = 'Hapus foto';
+            remove.setAttribute('aria-label', 'Hapus foto');
+            remove.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m-6 5v6m4-6v6"></path></svg>';
+            item.append(name, remove);
+            list.appendChild(item);
+        });
+    };
+
+    const addSelectedPhotos = input => {
+        const cell = input.closest('.photo-upload-cell');
+        const availableSlots = Math.max(0, 2 - cell.querySelectorAll('.saved-photo-card').length);
+        input._selectedPhotos = [...(input._selectedPhotos ?? []), ...Array.from(input.files)].slice(0, availableSlots);
+        renderSelectedPhotos(input);
+    };
+
+    document.addEventListener('change', event => {
+        if (event.target.matches('input[data-photo-input]')) addSelectedPhotos(event.target);
+    });
+
+    document.addEventListener('click', event => {
+        const selectedButton = event.target.closest('[data-remove-selected-photo]');
+        if (selectedButton) {
+            const cell = selectedButton.closest('.photo-upload-cell');
+            const input = cell.querySelector('input[data-photo-input]');
+            input._selectedPhotos = (input._selectedPhotos ?? Array.from(input.files))
+                .filter((_, index) => index !== Number(selectedButton.dataset.removeSelectedPhoto));
+            renderSelectedPhotos(input);
+            return;
+        }
+
+        const attachmentButton = event.target.closest('[data-delete-attachment]');
+        if (!attachmentButton) return;
+        const attachmentId = attachmentButton.dataset.deleteAttachment;
+        const form = document.getElementById('reportForm');
+        if (!form.querySelector(`input[name="delete_attachment_ids[]"][value="${attachmentId}"]`)) {
+            const deletion = document.createElement('input');
+            deletion.type = 'hidden';
+            deletion.name = 'delete_attachment_ids[]';
+            deletion.value = attachmentId;
+            form.appendChild(deletion);
+        }
+
+        const cell = attachmentButton.closest('.photo-upload-cell');
+        attachmentButton.closest('.saved-photo-card').remove();
+        const remainingCount = cell.querySelectorAll('.saved-photo-card').length;
+        const savedCount = cell.querySelector('.saved-photo-count');
+        if (savedCount) savedCount.textContent = remainingCount ? `${remainingCount} foto tersimpan` : 'Tidak ada foto tersimpan';
+        renderSelectedPhotos(cell.querySelector('input[data-photo-input]'));
+    });
+
+    document.querySelectorAll('input[data-photo-input]').forEach(renderSelectedPhotos);
 
     // ===== Kapasitas Tangki Widget - SOH Input Auto-Calculate =====
     const tankCapacities = @json($tanks->groupBy('code')->map(fn($g) => $g->first()?->capacity ?? 0));

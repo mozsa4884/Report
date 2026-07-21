@@ -6,8 +6,10 @@ use App\Models\DailyReport;
 use App\Models\DailyReportItem;
 use App\Models\Tank;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ReportController extends Controller
 {
@@ -33,7 +35,10 @@ class ReportController extends Controller
         }
 
         // Check if report already exists for today or a specific date
-        $tanks = Tank::where('is_active', true)->orderBy('id')->get();
+        $tanks = Tank::where('is_active', true)
+            ->orderBy('code')
+            ->orderBy('main_hole')
+            ->get();
         $defaultDate = now()->format('Y-m-d');
 
         return view('reports.create', compact('tanks', 'defaultDate'));
@@ -47,8 +52,9 @@ class ReportController extends Controller
 
         $request->validate([
             'date' => 'required|date|unique:daily_reports,date',
+            'site_name' => 'required|string|max:255',
             'items' => 'required|array',
-            'items.*.tank_id' => 'required|exists:tanks,id',
+            'items.*.tank_id' => 'nullable|exists:tanks,id',
             'items.*.sounding_pagi' => 'nullable|numeric',
             'items.*.liter_pagi' => 'nullable|string',
             'items.*.jam_pagi' => 'nullable',
@@ -60,6 +66,8 @@ class ReportController extends Controller
             'items.*.fm_pagi' => 'nullable|numeric',
             'items.*.fm_sore' => 'nullable|numeric',
             'items.*.keterangan' => 'nullable|string',
+            'items.*.photos' => 'nullable|array|max:2',
+            'items.*.photos.*' => 'image|mimes:jpg,jpeg,png,webp|max:5120',
             'kapasitas' => 'nullable|array',
             'kapasitas.*.soh' => 'nullable|numeric|min:0',
             'kapasitas.*.rata' => 'nullable|numeric|min:0',
@@ -71,17 +79,19 @@ class ReportController extends Controller
             'transfers.*.spm_awal' => 'nullable|numeric',
             'transfers.*.spm_akhir' => 'nullable|numeric',
             'transfers.*.spm_hasil' => 'nullable|numeric',
-            'transfers.*.spm_liter' => 'nullable|numeric',
+            'transfers.*.spm_liter' => 'nullable|string',
             'transfers.*.ft_awal' => 'nullable|numeric',
             'transfers.*.ft_akhir' => 'nullable|numeric',
             'transfers.*.ft_hasil' => 'nullable|numeric',
-            'transfers.*.ft_liter' => 'nullable|numeric',
+            'transfers.*.ft_liter' => 'nullable|string',
             'transfers.*.fm_awal' => 'nullable|numeric',
             'transfers.*.fm_akhir' => 'nullable|numeric',
             'transfers.*.fm_jumlah' => 'nullable|numeric',
             'transfers.*.jam_mulai' => 'nullable',
             'transfers.*.jam_selesai' => 'nullable',
             'transfers.*.lama_transfer' => 'nullable|string',
+            'transfers.*.photos' => 'nullable|array|max:2',
+            'transfers.*.photos.*' => 'image|mimes:jpg,jpeg,png,webp|max:5120',
 
             // Flowmeters C validation
             'flowmeters' => 'nullable|array',
@@ -100,6 +110,7 @@ class ReportController extends Controller
             $kapasitas = $request->kapasitas ?? [];
             $report = DailyReport::create([
                 'date'       => $request->date,
+                'site_name'  => $request->site_name,
                 'status'     => 'draft',
                 'fuelman_id' => Auth::id(),
                 'soh_spm1'   => $kapasitas['SPM1']['soh'] ?? null,
@@ -120,7 +131,7 @@ class ReportController extends Controller
 
             return redirect()->route('reports.show', $report->id)
                 ->with('success', 'Laporan harian berhasil dibuat sebagai Draft.');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
             return back()->withInput()->with('error', 'Gagal membuat laporan: ' . $e->getMessage());
         }
@@ -128,14 +139,14 @@ class ReportController extends Controller
 
     public function show($id)
     {
-        $report = DailyReport::with(['items.tank', 'transfers', 'flowmeters', 'fuelman', 'gl', 'spv'])->findOrFail($id);
+        $report = DailyReport::with(['items.tank', 'transfers', 'flowmeters', 'attachments', 'fuelman', 'gl', 'spv'])->findOrFail($id);
 
         return view('reports.show', compact('report'));
     }
 
     public function edit($id)
     {
-        $report = DailyReport::with(['items.tank', 'transfers', 'flowmeters'])->findOrFail($id);
+        $report = DailyReport::with(['items.tank', 'transfers', 'flowmeters', 'attachments'])->findOrFail($id);
         $user = Auth::user();
 
         if (!$user->isFuelman() || $report->fuelman_id !== $user->id) {
@@ -151,7 +162,10 @@ class ReportController extends Controller
         $items = $report->items->keyBy('tank_id');
         $transfers = $report->transfers;
         $flowmeters = $report->flowmeters;
-        $tanks = Tank::where('is_active', true)->orderBy('id')->get();
+        $tanks = Tank::where('is_active', true)
+            ->orderBy('code')
+            ->orderBy('main_hole')
+            ->get();
 
         return view('reports.edit', compact('report', 'tanks', 'items', 'transfers', 'flowmeters'));
     }
@@ -172,8 +186,9 @@ class ReportController extends Controller
 
         $request->validate([
             'date' => 'required|date|unique:daily_reports,date,' . $id,
+            'site_name' => 'required|string|max:255',
             'items' => 'required|array',
-            'items.*.tank_id' => 'required|exists:tanks,id',
+            'items.*.tank_id' => 'nullable|exists:tanks,id',
             'items.*.sounding_pagi' => 'nullable|numeric',
             'items.*.liter_pagi' => 'nullable|string',
             'items.*.jam_pagi' => 'nullable',
@@ -185,6 +200,10 @@ class ReportController extends Controller
             'items.*.fm_pagi' => 'nullable|numeric',
             'items.*.fm_sore' => 'nullable|numeric',
             'items.*.keterangan' => 'nullable|string',
+            'items.*.photos' => 'nullable|array|max:2',
+            'items.*.photos.*' => 'image|mimes:jpg,jpeg,png,webp|max:5120',
+            'delete_attachment_ids' => 'nullable|array',
+            'delete_attachment_ids.*' => 'integer',
             'kapasitas' => 'nullable|array',
             'kapasitas.*.soh' => 'nullable|numeric|min:0',
             'kapasitas.*.rata' => 'nullable|numeric|min:0',
@@ -196,17 +215,19 @@ class ReportController extends Controller
             'transfers.*.spm_awal' => 'nullable|numeric',
             'transfers.*.spm_akhir' => 'nullable|numeric',
             'transfers.*.spm_hasil' => 'nullable|numeric',
-            'transfers.*.spm_liter' => 'nullable|numeric',
+            'transfers.*.spm_liter' => 'nullable|string',
             'transfers.*.ft_awal' => 'nullable|numeric',
             'transfers.*.ft_akhir' => 'nullable|numeric',
             'transfers.*.ft_hasil' => 'nullable|numeric',
-            'transfers.*.ft_liter' => 'nullable|numeric',
+            'transfers.*.ft_liter' => 'nullable|string',
             'transfers.*.fm_awal' => 'nullable|numeric',
             'transfers.*.fm_akhir' => 'nullable|numeric',
             'transfers.*.fm_jumlah' => 'nullable|numeric',
             'transfers.*.jam_mulai' => 'nullable',
             'transfers.*.jam_selesai' => 'nullable',
             'transfers.*.lama_transfer' => 'nullable|string',
+            'transfers.*.photos' => 'nullable|array|max:2',
+            'transfers.*.photos.*' => 'image|mimes:jpg,jpeg,png,webp|max:5120',
 
             // Flowmeters C validation
             'flowmeters' => 'nullable|array',
@@ -222,17 +243,20 @@ class ReportController extends Controller
         try {
             $kapasitas = $request->kapasitas ?? [];
             $report->update([
-                'date'     => $request->date,
-                'status'   => 'draft',
-                'soh_spm1' => $kapasitas['SPM1']['soh'] ?? $report->soh_spm1,
-                'soh_spm2' => $kapasitas['SPM2']['soh'] ?? $report->soh_spm2,
-                'soh_spm3' => $kapasitas['SPM3']['soh'] ?? $report->soh_spm3,
-                'soh_ft05' => $kapasitas['FT05']['soh'] ?? $report->soh_ft05,
+                'date'      => $request->date,
+                'site_name' => $request->site_name,
+                'status'    => 'draft',
+                'soh_spm1'  => $kapasitas['SPM1']['soh'] ?? $report->soh_spm1,
+                'soh_spm2'  => $kapasitas['SPM2']['soh'] ?? $report->soh_spm2,
+                'soh_spm3'  => $kapasitas['SPM3']['soh'] ?? $report->soh_spm3,
+                'soh_ft05'  => $kapasitas['FT05']['soh'] ?? $report->soh_ft05,
                 'rata_spm1' => $kapasitas['SPM1']['rata'] ?? $report->rata_spm1,
                 'rata_spm2' => $kapasitas['SPM2']['rata'] ?? $report->rata_spm2,
                 'rata_spm3' => $kapasitas['SPM3']['rata'] ?? $report->rata_spm3,
                 'rata_ft05' => $kapasitas['FT05']['rata'] ?? $report->rata_ft05,
             ]);
+
+            $this->deleteAttachments($report, $request->input('delete_attachment_ids', []));
 
             // Clear existing items and save new ones
             $report->items()->delete();
@@ -247,7 +271,7 @@ class ReportController extends Controller
 
             return redirect()->route('reports.show', $report->id)
                 ->with('success', 'Laporan harian berhasil diperbarui.');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
             return back()->withInput()->with('error', 'Gagal memperbarui laporan: ' . $e->getMessage());
         }
@@ -267,8 +291,13 @@ class ReportController extends Controller
                 ->with('error', 'Laporan sudah dikirim atau disetujui.');
         }
 
+        // Reset approval saat submit ulang
         $report->update([
             'status' => 'submitted',
+            'gl_id' => null,
+            'spv_id' => null,
+            'gl_feedback' => null,
+            'spv_feedback' => null,
         ]);
 
         return redirect()->route('reports.show', $report->id)
@@ -303,10 +332,13 @@ class ReportController extends Controller
             return redirect()->route('reports.show', $report->id)
                 ->with('success', 'Laporan berhasil diverifikasi dan diteruskan ke Supervisor.');
         } else {
+            // GL Reject: tidak ada approval sama sekali
             $report->update([
                 'status' => 'rejected',
-                'gl_id' => $user->id,
+                'gl_id' => null,
+                'spv_id' => null,
                 'gl_feedback' => $request->feedback,
+                'spv_feedback' => null,
             ]);
             return redirect()->route('reports.show', $report->id)
                 ->with('warning', 'Laporan telah ditolak dan dikembalikan ke Fuelman.');
@@ -341,9 +373,12 @@ class ReportController extends Controller
             return redirect()->route('reports.show', $report->id)
                 ->with('success', 'Laporan berhasil disetujui (Approved).');
         } else {
+            // SPV Reject: GL tetap tercatat, SPV tidak
             $report->update([
                 'status' => 'rejected',
-                'spv_id' => $user->id,
+                // 'gl_id' tetap ada (sudah diverifikasi sebelumnya)
+                'spv_id' => null,
+                // 'gl_feedback' tetap (tidak diubah)
                 'spv_feedback' => $request->feedback,
             ]);
             return redirect()->route('reports.show', $report->id)
@@ -383,6 +418,10 @@ class ReportController extends Controller
     {
         // Every tank row, including SPM3 (D+B)/2, is saved from manual input.
         foreach ($itemsData as $data) {
+            if (empty($data['tank_id'])) {
+                continue;
+            }
+
             $tankId = $data['tank_id'];
 
             // Parse liter values - XXXX means no calibration data found
@@ -419,6 +458,14 @@ class ReportController extends Controller
             ]);
 
             $report->items()->save($item);
+
+            $tank = Tank::find($tankId);
+            $context = trim(implode(' — ', array_filter([
+                'Tangki ' . ($tank?->code ?? '-'),
+                $tank?->main_hole,
+                $data['keterangan'] ?? null,
+            ])));
+            $this->saveAttachmentPhotos($report, 'A', $data['attachment_key'] ?? "item-{$tankId}", $context, $data['photos'] ?? []);
         }
     }
 
@@ -451,17 +498,20 @@ class ReportController extends Controller
                 $fmJumlah = $fmAkhir - $fmAwal;
             }
 
-            $report->transfers()->create([
+            $spmLiterRaw = $data['spm_liter'] ?? null;
+            $ftLiterRaw = $data['ft_liter'] ?? null;
+
+            $transfer = $report->transfers()->create([
                 'dari_tangki'   => $data['dari_tangki'] ?: null,
                 'ke_tangki'     => $data['ke_tangki'] ?: null,
                 'spm_awal'      => $spmAwal,
                 'spm_akhir'     => $spmAkhir,
                 'spm_hasil'     => $spmHasil,
-                'spm_liter'     => isset($data['spm_liter']) && $data['spm_liter'] !== '' ? (double)$data['spm_liter'] : null,
+                'spm_liter'     => ($spmLiterRaw !== null && $spmLiterRaw !== '' && $spmLiterRaw !== 'XXXX') ? (float) $spmLiterRaw : null,
                 'ft_awal'       => $ftAwal,
                 'ft_akhir'      => $ftAkhir,
                 'ft_hasil'      => $ftHasil,
-                'ft_liter'      => isset($data['ft_liter']) && $data['ft_liter'] !== '' ? (double)$data['ft_liter'] : null,
+                'ft_liter'      => ($ftLiterRaw !== null && $ftLiterRaw !== '' && $ftLiterRaw !== 'XXXX') ? (float) $ftLiterRaw : null,
                 'fm_awal'       => $fmAwal,
                 'fm_akhir'      => $fmAkhir,
                 'fm_jumlah'     => $fmJumlah,
@@ -469,7 +519,64 @@ class ReportController extends Controller
                 'jam_selesai'   => $data['jam_selesai'] ?: null,
                 'lama_transfer' => $data['lama_transfer'] ?: null,
             ]);
+
+            $context = trim(implode(' — ', array_filter([
+                'Transfer ' . ($data['dari_tangki'] ?: '-') . ' ke ' . ($data['ke_tangki'] ?: '-'),
+                $data['lama_transfer'] ?? null,
+            ])));
+            $this->saveAttachmentPhotos($report, 'B', $data['attachment_key'] ?? "transfer-{$transfer->id}", $context, $data['photos'] ?? []);
         }
+    }
+
+    /** Add photos to an attachment set, up to the two-photo limit. */
+    private function saveAttachmentPhotos(DailyReport $report, string $section, string $attachmentKey, string $context, array $files): void
+    {
+        $photos = array_values(array_filter($files, fn ($file) => $file instanceof UploadedFile));
+        if ($photos === []) {
+            return;
+        }
+
+        $existing = $report->attachments()
+            ->where('section', $section)
+            ->where('attachment_key', $attachmentKey)
+            ->get();
+
+        $availableSlots = max(0, 2 - $existing->count());
+
+        foreach (array_slice($photos, 0, $availableSlots) as $photo) {
+            $path = $photo->store("report-attachments/{$report->id}/section-{$section}", $this->attachmentDisk());
+            $report->attachments()->create([
+                'section' => $section,
+                'attachment_key' => $attachmentKey,
+                'context' => $context,
+                'path' => $path,
+            ]);
+        }
+    }
+
+    /** Delete only attachments that belong to the report currently being edited. */
+    private function deleteAttachments(DailyReport $report, array $attachmentIds): void
+    {
+        if ($attachmentIds === []) {
+            return;
+        }
+
+        $attachments = $report->attachments()
+            ->whereIn('id', array_unique($attachmentIds))
+            ->get();
+
+        foreach ($attachments as $attachment) {
+            Storage::disk($this->attachmentDisk())->delete($attachment->path);
+            $attachment->delete();
+        }
+    }
+
+    /** Local storage is private; use Laravel's public disk for browser-visible attachments. */
+    private function attachmentDisk(): string
+    {
+        $disk = config('filesystems.default');
+
+        return $disk === 'local' ? 'public' : $disk;
     }
 
     private function saveFlowmeters(DailyReport $report, array $flowmetersData)

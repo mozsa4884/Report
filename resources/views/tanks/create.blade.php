@@ -32,7 +32,11 @@
         
         <div class="form-group">
             <label for="main_hole">Main Hole</label>
-            <input type="text" name="main_hole" id="main_hole" class="form-control" value="{{ old('main_hole') }}" placeholder="Contoh: TENGAH, DEPAN, BELAKANG" required>
+            <select name="main_hole" id="main_hole" class="form-control" required>
+                <option value="">Pilih Main Hole</option>
+                <option value="TENGAH" @selected(old('main_hole') === 'TENGAH')>TENGAH</option>
+                <option value="(DEPAN + BELAKANG) / 2" @selected(old('main_hole') === '(DEPAN + BELAKANG) / 2')>(DEPAN + BELAKANG) / 2</option>
+            </select>
         </div>
 
         <div class="form-group">

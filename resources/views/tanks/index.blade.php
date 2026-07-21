@@ -6,7 +6,7 @@
 <div class="content-header">
     <div>
         <h1 class="page-title">Manajemen Tangki BBM</h1>
-        <p class="page-subtitle">Daftar tangki BBM aktif di Warehouse & Inventory Site Sungai Putting</p>
+        <p class="page-subtitle">Daftar tangki BBM aktif di Warehouse & Inventory</p>
     </div>
     @if(Auth::user()->isSpv())
         <a href="{{ route('tanks.create') }}" class="btn btn-primary">

@@ -6,7 +6,7 @@
 <div class="content-header">
     <div>
         <h1 class="page-title">Laporan Harian Kegiatan Fuelman</h1>
-        <p class="page-subtitle">Warehouse & Inventory Site Sungai Putting</p>
+        <p class="page-subtitle">Warehouse & Inventory</p>
     </div>
     @if(Auth::user()->isFuelman())
         <a href="{{ route('reports.create') }}" class="btn btn-primary">

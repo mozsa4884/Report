@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Daily Report | Warehouse & Inventory</title>
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}">
+    <meta name="theme-color" content="#14b8a6">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -136,18 +138,26 @@
         }
 
         .logo-badge {
-            width: 40px; height: 40px;
+            width: 56px; 
+            height: 56px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 10px;
+            border-radius: 12px;
             overflow: hidden;
         }
 
         .logo-badge img {
-            width: 36px;
-            height: 36px;
+            width: 52px;
+            height: 52px;
             object-fit: contain;
+            background: transparent;
+            border-radius: 10px;
+        }
+
+        /* Dark mode: tambah brightness */
+        body.dark-mode .logo-badge img {
+            filter: brightness(1.3) contrast(1.1);
         }
 
         .brand-name {
@@ -674,10 +684,103 @@
            RESPONSIVE
            ============================================ */
         @media (max-width: 768px) {
-            header { padding: 1rem 5%; }
-            .hero h1 { font-size: 2.5rem; }
-            .hero p  { font-size: 1rem; }
-            .features, .roles-section { padding: 5rem 5%; }
+            header { 
+                padding: 1rem 5%; 
+                flex-direction: row;
+                justify-content: space-between;
+            }
+            
+            .logo-container {
+                gap: 0.5rem;
+            }
+            
+            .brand-name {
+                font-size: 1rem;
+            }
+            
+            .brand-sub {
+                font-size: 0.65rem;
+            }
+            
+            .auth-buttons {
+                gap: 0.5rem;
+            }
+            
+            .auth-buttons .btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .hero { 
+                padding: 3rem 5% 5rem;
+            }
+            
+            .hero h1 { 
+                font-size: 2rem;
+                line-height: 1.2;
+            }
+            
+            .hero h2 {
+                font-size: 1.5rem;
+            }
+            
+            .hero p  { 
+                font-size: 1rem;
+                max-width: 100%;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .cta-buttons .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .features, .roles-section { 
+                padding: 3rem 5%; 
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .roles-grid {
+                grid-template-columns: 1fr;
+                gap: 1.25rem;
+            }
+            
+            footer {
+                padding: 2rem 5%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .logo-badge {
+                width: 44px;
+                height: 44px;
+            }
+            
+            .logo-badge img {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .hero h1 {
+                font-size: 1.75rem;
+            }
+            
+            .hero h2 {
+                font-size: 1.25rem;
+            }
+            
+            .auth-buttons .btn {
+                padding: 0.5rem 0.85rem;
+                font-size: 0.85rem;
+            }
         }
     </style>
 </head>

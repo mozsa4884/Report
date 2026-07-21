@@ -10,6 +10,7 @@ class DailyReport extends Model
 {
     protected $fillable = [
         'date',
+        'site_name',
         'status',
         'fuelman_id',
         'gl_id',
@@ -58,5 +59,10 @@ class DailyReport extends Model
     public function flowmeters(): HasMany
     {
         return $this->hasMany(DailyReportFlowmeter::class);
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(DailyReportAttachment::class);
     }
 }

@@ -83,6 +83,14 @@ SESSION_DRIVER=file
 SESSION_LIFETIME=120
 CACHE_STORE=file
 QUEUE_CONNECTION=sync
+FILESYSTEM_DISK="${FILESYSTEM_DISK:-local}"
+AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-}"
+AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-}"
+AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
+AWS_BUCKET="${AWS_BUCKET:-}"
+AWS_ENDPOINT="${AWS_ENDPOINT:-}"
+AWS_URL="${AWS_URL:-}"
+AWS_USE_PATH_STYLE_ENDPOINT="${AWS_USE_PATH_STYLE_ENDPOINT:-false}"
 ENVEOF
 else
 cat > /var/www/.env << ENVEOF
@@ -106,6 +114,14 @@ SESSION_DRIVER="${SESSION_DRIVER:-database}"
 SESSION_LIFETIME=120
 CACHE_STORE="${CACHE_STORE:-database}"
 QUEUE_CONNECTION=sync
+FILESYSTEM_DISK="${FILESYSTEM_DISK:-local}"
+AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-}"
+AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-}"
+AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
+AWS_BUCKET="${AWS_BUCKET:-}"
+AWS_ENDPOINT="${AWS_ENDPOINT:-}"
+AWS_URL="${AWS_URL:-}"
+AWS_USE_PATH_STYLE_ENDPOINT="${AWS_USE_PATH_STYLE_ENDPOINT:-false}"
 ENVEOF
 fi
 
@@ -161,6 +177,7 @@ php artisan migrate --seed --force
 # Compiled Blade views can otherwise survive a container restart when storage
 # is persistent, making a deployment appear to run an older report form.
 php artisan optimize:clear
+php artisan storage:link --force
 
 # =============================================
 # STEP 7: Setup Nginx port
