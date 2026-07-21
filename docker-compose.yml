@@ -18,19 +18,17 @@ services:
       DB_DATABASE: ${DB_DATABASE:-daily_report}
       DB_USERNAME: ${DB_USERNAME:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env before deploying}
-      FILESYSTEM_DISK: s3
+      FILESYSTEM_DISK: ${FILESYSTEM_DISK:-local}
       AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-minioadmin}
       AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
       AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-us-east-1}
       AWS_BUCKET: ${MINIO_BUCKET:-daily-report}
-      AWS_ENDPOINT: http://minio:9000
-      AWS_URL: ${S3_PUBLIC_URL:-http://localhost:9000/daily-report}
-      AWS_USE_PATH_STYLE_ENDPOINT: "true"
+      AWS_ENDPOINT: ${AWS_ENDPOINT:-http://minio:9000}
+      AWS_URL: ${S3_PUBLIC_URL:-}
+      AWS_USE_PATH_STYLE_ENDPOINT: ${AWS_USE_PATH_STYLE_ENDPOINT:-true}
     depends_on:
       db:
         condition: service_healthy
-      minio-init:
-        condition: service_completed_successfully
     networks:
       - laravel_net
 
