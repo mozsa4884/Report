@@ -1072,26 +1072,33 @@ document.addEventListener('DOMContentLoaded', function () {
         const availableSlots = Math.max(0, 2 - cell.querySelectorAll('.saved-photo-card').length);
         const newFiles = Array.from(input.files).slice(0, availableSlots);
         
+        if (newFiles.length === 0) return;
+        
         // Show loading indicator
-        const button = cell.querySelector('.photo-upload-button');
-        const originalText = button.textContent;
-        button.textContent = 'Mengompres gambar...';
-        button.disabled = true;
+        const list = cell.querySelector('[data-photo-selected]');
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'photo-selected-item';
+        loadingDiv.style.color = '#666';
+        loadingDiv.textContent = 'Mengompres gambar...';
+        list.appendChild(loadingDiv);
         
-        // Compress images
-        const compressedFiles = await Promise.all(
-            newFiles.map(file => compressImage(file, 1, 1920))
-        );
-        
-        button.textContent = originalText;
-        button.disabled = false;
-        
-        input._selectedPhotos = [...(input._selectedPhotos ?? []), ...compressedFiles];
-        renderSelectedPhotos(input);
+        try {
+            // Compress images
+            const compressedFiles = await Promise.all(
+                newFiles.map(file => compressImage(file, 1, 1920))
+            );
+            
+            input._selectedPhotos = [...(input._selectedPhotos ?? []), ...compressedFiles];
+            renderSelectedPhotos(input);
+        } catch (error) {
+            console.error('Error compressing images:', error);
+            alert('Gagal mengompres gambar. Silakan coba lagi.');
+            list.removeChild(loadingDiv);
+        }
     };
 
-    document.addEventListener('change', event => {
-        if (event.target.matches('input[data-photo-input]')) addSelectedPhotos(event.target);
+    document.addEventListener('change', async event => {
+        if (event.target.matches('input[data-photo-input]')) await addSelectedPhotos(event.target);
     });
 
     document.addEventListener('click', event => {
