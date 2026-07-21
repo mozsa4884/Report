@@ -1059,6 +1059,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         type: 'image/jpeg',
                         lastModified: Date.now()
                     });
+                    
+                    // Log compression results
+                    console.log('Image compressed:', {
+                        original: (file.size / 1024).toFixed(2) + ' KB',
+                        compressed: (finalFile.size / 1024).toFixed(2) + ' KB',
+                        ratio: ((1 - finalFile.size / file.size) * 100).toFixed(1) + '% smaller'
+                    });
+                    
                     compressedFiles.push(finalFile);
                 } else {
                     compressedFiles.push(file);

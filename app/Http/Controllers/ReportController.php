@@ -84,7 +84,7 @@ class ReportController extends Controller
             'items.*.fm_sore' => 'nullable|numeric',
             'items.*.keterangan' => 'nullable|string',
             'items.*.photos' => 'nullable|array|max:2',
-            'items.*.photos.*' => 'image|mimes:jpg,jpeg,png,webp|max:5120',
+            'items.*.photos.*' => 'image|mimes:jpg,jpeg,png,webp|max:1024',
             'kapasitas' => 'nullable|array',
             'kapasitas.*.soh' => 'nullable|numeric|min:0',
             'kapasitas.*.rata' => 'nullable|numeric|min:0',
@@ -108,7 +108,7 @@ class ReportController extends Controller
             'transfers.*.jam_selesai' => 'nullable',
             'transfers.*.lama_transfer' => 'nullable|string',
             'transfers.*.photos' => 'nullable|array|max:2',
-            'transfers.*.photos.*' => 'image|mimes:jpg,jpeg,png,webp|max:5120',
+            'transfers.*.photos.*' => 'image|mimes:jpg,jpeg,png,webp|max:1024',
 
             // Flowmeters C validation
             'flowmeters' => 'nullable|array',
@@ -124,10 +124,10 @@ class ReportController extends Controller
             'site_id.exists' => 'Site yang dipilih tidak valid.',
             'items.*.photos.*.image' => 'File harus berupa gambar.',
             'items.*.photos.*.mimes' => 'Format gambar harus: JPG, JPEG, PNG, atau WEBP.',
-            'items.*.photos.*.max' => 'Ukuran gambar maksimal 5MB per file.',
+            'items.*.photos.*.max' => 'Ukuran gambar maksimal 1MB per file.',
             'transfers.*.photos.*.image' => 'File harus berupa gambar.',
             'transfers.*.photos.*.mimes' => 'Format gambar harus: JPG, JPEG, PNG, atau WEBP.',
-            'transfers.*.photos.*.max' => 'Ukuran gambar maksimal 5MB per file.',
+            'transfers.*.photos.*.max' => 'Ukuran gambar maksimal 1MB per file.',
         ]);
 
         DB::beginTransaction();
@@ -250,7 +250,7 @@ class ReportController extends Controller
             'items.*.fm_sore' => 'nullable|numeric',
             'items.*.keterangan' => 'nullable|string',
             'items.*.photos' => 'nullable|array|max:2',
-            'items.*.photos.*' => 'image|mimes:jpg,jpeg,png,webp|max:5120',
+            'items.*.photos.*' => 'image|mimes:jpg,jpeg,png,webp|max:1024',
             'delete_attachment_ids' => 'nullable|array',
             'delete_attachment_ids.*' => 'integer',
             'kapasitas' => 'nullable|array',
@@ -276,7 +276,7 @@ class ReportController extends Controller
             'transfers.*.jam_selesai' => 'nullable',
             'transfers.*.lama_transfer' => 'nullable|string',
             'transfers.*.photos' => 'nullable|array|max:2',
-            'transfers.*.photos.*' => 'image|mimes:jpg,jpeg,png,webp|max:5120',
+            'transfers.*.photos.*' => 'image|mimes:jpg,jpeg,png,webp|max:1024',
 
             // Flowmeters C validation
             'flowmeters' => 'nullable|array',
