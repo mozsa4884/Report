@@ -535,6 +535,7 @@
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const reportForm = document.getElementById('reportForm');
@@ -1041,7 +1042,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         initialQuality: 0.85      // good quality
                     };
                     
-                    const compressed = await window.imageCompression(file, options);
+                    const compressed = await imageCompression(file, options);
                     const finalFile = new File([compressed], file.name, {
                         type: 'image/jpeg',
                         lastModified: Date.now()

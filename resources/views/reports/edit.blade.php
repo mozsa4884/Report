@@ -547,6 +547,7 @@
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const reportForm = document.getElementById('reportForm');
@@ -1024,15 +1025,63 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     };
 
-    const addSelectedPhotos = input => {
+    const addSelectedPhotos = async (input) => {
         const cell = input.closest('.photo-upload-cell');
+        const list = cell.querySelector('[data-photo-selected]');
         const availableSlots = Math.max(0, 2 - cell.querySelectorAll('.saved-photo-card').length);
-        input._selectedPhotos = [...(input._selectedPhotos ?? []), ...Array.from(input.files)].slice(0, availableSlots);
-        renderSelectedPhotos(input);
+        const newFiles = Array.from(input.files).slice(0, availableSlots);
+        
+        if (newFiles.length === 0) return;
+        
+        // Show loading
+        const loadingItem = document.createElement('div');
+        loadingItem.className = 'photo-selected-item';
+        loadingItem.style.color = '#666';
+        loadingItem.textContent = '⏳ Mengompres gambar...';
+        list.appendChild(loadingItem);
+        
+        try {
+            const compressedFiles = [];
+            
+            for (const file of newFiles) {
+                if (file.type.startsWith('image/')) {
+                    // Compress with browser-image-compression library
+                    const options = {
+                        maxSizeMB: 0.8,          // max 800KB
+                        maxWidthOrHeight: 1920,   // max dimension
+                        useWebWorker: true,       // faster with worker
+                        fileType: 'image/jpeg',   // convert to JPEG
+                        initialQuality: 0.85      // good quality
+                    };
+                    
+                    const compressed = await imageCompression(file, options);
+                    const finalFile = new File([compressed], file.name, {
+                        type: 'image/jpeg',
+                        lastModified: Date.now()
+                    });
+                    compressedFiles.push(finalFile);
+                } else {
+                    compressedFiles.push(file);
+                }
+            }
+            
+            // Remove loading
+            list.removeChild(loadingItem);
+            
+            // Add compressed files
+            input._selectedPhotos = [...(input._selectedPhotos ?? []), ...compressedFiles];
+            renderSelectedPhotos(input);
+        } catch (error) {
+            console.error('Compression error:', error);
+            list.removeChild(loadingItem);
+            alert('Gagal mengompres gambar: ' + error.message);
+        }
     };
 
-    document.addEventListener('change', event => {
-        if (event.target.matches('input[data-photo-input]')) addSelectedPhotos(event.target);
+    document.addEventListener('change', async (event) => {
+        if (event.target.matches('input[data-photo-input]')) {
+            await addSelectedPhotos(event.target);
+        }
     });
 
     document.addEventListener('click', event => {
