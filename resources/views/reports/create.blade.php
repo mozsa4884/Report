@@ -1012,10 +1012,81 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     };
 
-    const addSelectedPhotos = input => {
+    // Compress image before upload
+    const compressImage = async (file, maxSizeMB = 1, maxWidthOrHeight = 1920) => {
+        if (!file.type.startsWith('image/')) return file;
+        
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    // Resize if too large
+                    if (width > height) {
+                        if (width > maxWidthOrHeight) {
+                            height = height * (maxWidthOrHeight / width);
+                            width = maxWidthOrHeight;
+                        }
+                    } else {
+                        if (height > maxWidthOrHeight) {
+                            width = width * (maxWidthOrHeight / height);
+                            height = maxWidthOrHeight;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Try different quality levels to get under maxSizeMB
+                    let quality = 0.9;
+                    const tryCompress = () => {
+                        canvas.toBlob((blob) => {
+                            if (blob.size > maxSizeMB * 1024 * 1024 && quality > 0.1) {
+                                quality -= 0.1;
+                                tryCompress();
+                            } else {
+                                const compressedFile = new File([blob], file.name, {
+                                    type: 'image/jpeg',
+                                    lastModified: Date.now()
+                                });
+                                resolve(compressedFile);
+                            }
+                        }, 'image/jpeg', quality);
+                    };
+                    tryCompress();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+
+    const addSelectedPhotos = async input => {
         const cell = input.closest('.photo-upload-cell');
         const availableSlots = Math.max(0, 2 - cell.querySelectorAll('.saved-photo-card').length);
-        input._selectedPhotos = [...(input._selectedPhotos ?? []), ...Array.from(input.files)].slice(0, availableSlots);
+        const newFiles = Array.from(input.files).slice(0, availableSlots);
+        
+        // Show loading indicator
+        const button = cell.querySelector('.photo-upload-button');
+        const originalText = button.textContent;
+        button.textContent = 'Mengompres gambar...';
+        button.disabled = true;
+        
+        // Compress images
+        const compressedFiles = await Promise.all(
+            newFiles.map(file => compressImage(file, 1, 1920))
+        );
+        
+        button.textContent = originalText;
+        button.disabled = false;
+        
+        input._selectedPhotos = [...(input._selectedPhotos ?? []), ...compressedFiles];
         renderSelectedPhotos(input);
     };
 
