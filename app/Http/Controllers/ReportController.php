@@ -56,7 +56,9 @@ class ReportController extends Controller
             'user_id' => Auth::id(),
             'site_id' => $request->site_id,
             'date' => $request->date,
-            'items_count' => count($request->items ?? [])
+            'items_count' => count($request->items ?? []),
+            'has_files' => $request->hasFile('items.*.photos.*'),
+            'memory_usage' => memory_get_usage(true) / 1024 / 1024 . ' MB'
         ]);
 
         $request->validate([
@@ -120,6 +122,12 @@ class ReportController extends Controller
             'date.unique' => 'Laporan untuk site ini pada tanggal tersebut sudah ada.',
             'site_id.required' => 'Site harus dipilih.',
             'site_id.exists' => 'Site yang dipilih tidak valid.',
+            'items.*.photos.*.image' => 'File harus berupa gambar.',
+            'items.*.photos.*.mimes' => 'Format gambar harus: JPG, JPEG, PNG, atau WEBP.',
+            'items.*.photos.*.max' => 'Ukuran gambar maksimal 5MB per file.',
+            'transfers.*.photos.*.image' => 'File harus berupa gambar.',
+            'transfers.*.photos.*.mimes' => 'Format gambar harus: JPG, JPEG, PNG, atau WEBP.',
+            'transfers.*.photos.*.max' => 'Ukuran gambar maksimal 5MB per file.',
         ]);
 
         DB::beginTransaction();
@@ -140,16 +148,33 @@ class ReportController extends Controller
                 'rata_ft05'  => $kapasitas['FT05']['rata'] ?? null,
             ]);
 
+            \Log::info('Report created', ['report_id' => $report->id]);
+
             $this->saveItems($report, $request->items);
+            \Log::info('Items saved', ['report_id' => $report->id]);
+            
             $this->saveTransfers($report, $request->transfers ?? []);
+            \Log::info('Transfers saved', ['report_id' => $report->id]);
+            
             $this->saveFlowmeters($report, $request->flowmeters ?? []);
+            \Log::info('Flowmeters saved', ['report_id' => $report->id]);
 
             DB::commit();
+            \Log::info('Report stored successfully', ['report_id' => $report->id]);
 
             return redirect()->route('reports.show', $report->id)
                 ->with('success', 'Laporan harian berhasil dibuat sebagai Draft.');
-        } catch (\Throwable $e) {
+        } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
+            \Log::error('Validation error in store', ['errors' => $e->errors()]);
+            return back()->withInput()->withErrors($e->errors());
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Failed to store report', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'memory' => memory_get_usage(true) / 1024 / 1024 . ' MB'
+            ]);
             return back()->withInput()->with('error', 'Gagal membuat laporan: ' . $e->getMessage());
         }
     }
