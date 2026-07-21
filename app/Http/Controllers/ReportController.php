@@ -620,13 +620,36 @@ class ReportController extends Controller
         $availableSlots = max(0, 2 - $existing->count());
 
         foreach (array_slice($photos, 0, $availableSlots) as $photo) {
-            $path = $photo->store("report-attachments/{$report->id}/section-{$section}", $this->attachmentDisk());
-            $report->attachments()->create([
-                'section' => $section,
-                'attachment_key' => $attachmentKey,
-                'context' => $context,
-                'path' => $path,
-            ]);
+            try {
+                $disk = $this->attachmentDisk();
+                \Log::info("Attempting to upload photo", [
+                    'disk' => $disk,
+                    'filename' => $photo->getClientOriginalName(),
+                    'size' => $photo->getSize(),
+                    'section' => $section,
+                ]);
+                
+                $path = $photo->store("report-attachments/{$report->id}/section-{$section}", $disk);
+                
+                \Log::info("Photo uploaded successfully", [
+                    'path' => $path,
+                    'disk' => $disk,
+                ]);
+                
+                $report->attachments()->create([
+                    'section' => $section,
+                    'attachment_key' => $attachmentKey,
+                    'context' => $context,
+                    'path' => $path,
+                ]);
+            } catch (\Exception $e) {
+                \Log::error("Failed to upload photo", [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                    'disk' => $disk ?? 'unknown',
+                ]);
+                throw $e;
+            }
         }
     }
 
