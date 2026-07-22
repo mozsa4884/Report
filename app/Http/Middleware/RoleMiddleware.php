@@ -22,7 +22,24 @@ class RoleMiddleware
             return redirect()->route('login');
         }
 
-        if (!in_array($request->user()->role, $roles)) {
+        $user = $request->user();
+        $userRole = $user->role;
+        
+        // Map role aliases to actual role names
+        $roleMap = [
+            'gl' => 'group_leader',
+            'spv' => 'supervisor',
+            'admin' => 'admin',
+            'fuelman' => 'fuelman',
+        ];
+        
+        // Convert requested roles using the map
+        $allowedRoles = array_map(function($role) use ($roleMap) {
+            return $roleMap[$role] ?? $role;
+        }, $roles);
+        
+        // Check if user's role is in allowed roles
+        if (!in_array($userRole, $allowedRoles)) {
             abort(403, 'Anda tidak memiliki hak akses untuk halaman ini.');
         }
 
