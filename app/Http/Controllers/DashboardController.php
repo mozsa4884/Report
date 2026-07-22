@@ -76,7 +76,12 @@ class DashboardController extends Controller
             // Total Fuel usage (sum of fm_pakai for all reports including draft)
             $totalUsage = DailyReportItem::sum('fm_pakai');
 
-            // Sounding status for active tanks (latest report values, any status)
+            // Latest approved report for fuel status widget
+            $latestApprovedReport = DailyReport::where('status', 'approved')
+                ->orderBy('date', 'desc')
+                ->first();
+
+            // Sounding status for active tanks (latest approved report values)
             $latestReport = DailyReport::orderBy('date', 'desc')
                 ->first();
 
@@ -87,7 +92,7 @@ class DashboardController extends Controller
                     ->get();
             }
 
-            return view('dashboard', compact('stats', 'recentReports', 'pendingReports', 'totalUsage', 'tankStatus', 'latestReport'));
+            return view('dashboard', compact('stats', 'recentReports', 'pendingReports', 'totalUsage', 'tankStatus', 'latestReport', 'latestApprovedReport'));
         }
 
         abort(403);
