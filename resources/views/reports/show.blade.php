@@ -1100,7 +1100,15 @@
                                 <div style="font-size: 8.5pt; font-weight: 600; color: #64748b; margin-bottom: 0.5rem;">
                                     Foto {{ $index + 1 }}
                                 </div>
-                                <img src="{{ $attachment->getPublicUrl() }}" 
+                                @php
+                                    $imageUrl = $attachment->getPublicUrl();
+                                @endphp
+                                @if(config('app.debug'))
+                                    <div style="font-size: 7pt; color: #94a3b8; margin-bottom: 0.25rem; word-break: break-all; font-family: monospace;">
+                                        URL: {{ $imageUrl }}
+                                    </div>
+                                @endif
+                                <img src="{{ $imageUrl }}" 
                                      alt="Foto {{ $index + 1 }}" 
                                      style="display: block; width: 100%; height: 280px; object-fit: contain; border-radius: 6px; border: 1px solid #e2e8f0; background: #f8fafc;">
                             </div>
