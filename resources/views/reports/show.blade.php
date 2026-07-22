@@ -1100,7 +1100,11 @@
                                 <div style="font-size: 8.5pt; font-weight: 600; color: #64748b; margin-bottom: 0.5rem;">
                                     Foto {{ $index + 1 }}
                                 </div>
-                                <img src="{{ Storage::disk(config('filesystems.report_attachment_disk', 'public') === 'local' ? 'public' : config('filesystems.report_attachment_disk', 'public'))->url($attachment->path) }}" alt="Foto {{ $index + 1 }}" style="display: block; width: 100%; height: 280px; object-fit: contain; border-radius: 6px; border: 1px solid #e2e8f0; background: #f8fafc;">
+                                @php
+                                    $diskName = config('filesystems.report_attachment_disk', 'public');
+                                    $imageUrl = Storage::disk($diskName)->url($attachment->path);
+                                @endphp
+                                <img src="{{ $imageUrl }}" alt="Foto {{ $index + 1 }}" style="display: block; width: 100%; height: 280px; object-fit: contain; border-radius: 6px; border: 1px solid #e2e8f0; background: #f8fafc;">
                             </div>
                         @endforeach
                         
