@@ -142,4 +142,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit')->middleware('role:admin');
     Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update')->middleware('role:admin');
     Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy')->middleware('role:admin');
+    
+    // Sites
+    Route::get('/sites', [\App\Http\Controllers\SiteController::class, 'index'])->name('sites.index')->middleware('role:spv,admin');
+    Route::get('/sites/create', [\App\Http\Controllers\SiteController::class, 'create'])->name('sites.create')->middleware('role:admin');
+    Route::post('/sites', [\App\Http\Controllers\SiteController::class, 'store'])->name('sites.store')->middleware('role:admin');
+    Route::get('/sites/{id}/edit', [\App\Http\Controllers\SiteController::class, 'edit'])->name('sites.edit')->middleware('role:admin');
+    Route::put('/sites/{id}', [\App\Http\Controllers\SiteController::class, 'update'])->name('sites.update')->middleware('role:admin');
+    Route::delete('/sites/{id}', [\App\Http\Controllers\SiteController::class, 'destroy'])->name('sites.destroy')->middleware('role:admin');
 });
