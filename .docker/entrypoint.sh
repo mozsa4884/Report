@@ -101,6 +101,7 @@ DB_PORT="${DB_PORT:-5432}"
 DB_DATABASE="${DB_DATABASE:-daily_report}"
 DB_USERNAME="${DB_USERNAME:-postgres}"
 DB_PASSWORD="${DB_PASSWORD:-password}"
+DB_SSLMODE="${DB_SSLMODE:-prefer}"
 
 SESSION_DRIVER="${SESSION_DRIVER:-database}"
 SESSION_LIFETIME=120
@@ -201,8 +202,16 @@ fi
 
 # Now check Laravel can connect
 echo "Testing Laravel database connection to '$DB_DATABASE'..."
+echo "Connection details:"
+echo "  DB_CONNECTION=$DB_CONNECTION"
+echo "  DB_HOST=$DB_HOST"
+echo "  DB_PORT=$DB_PORT"
+echo "  DB_DATABASE=$DB_DATABASE"
+echo "  DB_USERNAME=$DB_USERNAME"
+echo "  DB_PASSWORD=***${DB_PASSWORD: -4}"
+
 COUNT=0
-until php artisan db:show > /dev/null 2>&1; do
+until php artisan db:show > /tmp/db_test.log 2>&1; do
     COUNT=$((COUNT + 1))
     if [ $COUNT -ge $MAX_TRIES ]; then
         echo "================================================"
@@ -214,6 +223,9 @@ until php artisan db:show > /dev/null 2>&1; do
         echo "  Database: $DB_DATABASE"
         echo "  User: $DB_USERNAME"
         echo ""
+        echo "Laravel error output:"
+        cat /tmp/db_test.log
+        echo ""
         echo "Possible solutions:"
         echo "  1. Check PostgreSQL service is 'Online' in Railway"
         echo "  2. Grant permissions: GRANT ALL ON DATABASE $DB_DATABASE TO $DB_USERNAME;"
@@ -221,7 +233,11 @@ until php artisan db:show > /dev/null 2>&1; do
         echo "================================================"
         exit 1
     fi
-    echo "Laravel connection test to '$DB_DATABASE' (attempt $COUNT/$MAX_TRIES), retrying in 2s..."
+    if [ $COUNT -eq 1 ] || [ $((COUNT % 5)) -eq 0 ]; then
+        echo "Laravel connection test to '$DB_DATABASE' (attempt $COUNT/$MAX_TRIES)..."
+        echo "Error details:"
+        cat /tmp/db_test.log 2>/dev/null || echo "  (no error output)"
+    fi
     sleep 2
 done
 echo "PostgreSQL connection successful to database: $DB_DATABASE"
