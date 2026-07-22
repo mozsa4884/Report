@@ -201,6 +201,19 @@ class ReportController extends Controller
     {
         $report = DailyReport::with(['items.tank', 'transfers', 'flowmeters', 'attachments', 'fuelman', 'gl', 'spv', 'site'])->findOrFail($id);
 
+        // Debug: Log attachment URLs
+        if ($report->attachments->isNotEmpty()) {
+            foreach ($report->attachments as $attachment) {
+                \Log::info('Attachment URL generated', [
+                    'id' => $attachment->id,
+                    'path' => $attachment->path,
+                    'public_url' => $attachment->getPublicUrl(),
+                    'disk' => config('filesystems.report_attachment_disk'),
+                    's3_url_config' => config('filesystems.disks.s3.url'),
+                ]);
+            }
+        }
+
         return view('reports.show', compact('report'));
     }
 

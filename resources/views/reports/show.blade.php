@@ -1100,11 +1100,10 @@
                                 <div style="font-size: 8.5pt; font-weight: 600; color: #64748b; margin-bottom: 0.5rem;">
                                     Foto {{ $index + 1 }}
                                 </div>
-                                @php
-                                    $diskName = config('filesystems.report_attachment_disk', 'public');
-                                    $imageUrl = Storage::disk($diskName)->url($attachment->path);
-                                @endphp
-                                <img src="{{ $imageUrl }}" alt="Foto {{ $index + 1 }}" style="display: block; width: 100%; height: 280px; object-fit: contain; border-radius: 6px; border: 1px solid #e2e8f0; background: #f8fafc;">
+                                <img src="{{ $attachment->getPublicUrl() }}" 
+                                     alt="Foto {{ $index + 1 }}" 
+                                     style="display: block; width: 100%; height: 280px; object-fit: contain; border-radius: 6px; border: 1px solid #e2e8f0; background: #f8fafc;"
+                                     onerror="console.error('Failed to load image:', this.src); this.style.border='2px solid #ef4444';">
                             </div>
                         @endforeach
                         
