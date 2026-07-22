@@ -56,6 +56,14 @@ return [
             'url' => env('AWS_URL'),
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            // Do not let an unavailable object-storage service hold the PHP
+            // worker until Railway returns a 500/504 response. The upload
+            // exception is handled by ReportController and shown to the user.
+            'retries' => 0,
+            'http' => [
+                'connect_timeout' => (float) env('AWS_CONNECT_TIMEOUT', 5),
+                'timeout' => (float) env('AWS_REQUEST_TIMEOUT', 20),
+            ],
             'throw' => false,
             'report' => false,
         ],
