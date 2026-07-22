@@ -128,6 +128,7 @@ Route::middleware('auth')->group(function () {
     
     // Tanks
     Route::get('/tanks', [TankController::class, 'index'])->name('tanks.index')->middleware('role:admin');
+    Route::get('/tanks/monitoring', [TankController::class, 'monitoring'])->name('tanks.monitoring')->middleware('role:gl,spv,admin');
     Route::get('/tanks/{id}', [TankController::class, 'show'])->name('tanks.show')->middleware('role:admin');
     Route::get('/tanks/{id}/edit', [TankController::class, 'edit'])->name('tanks.edit')->middleware('role:admin');
     Route::put('/tanks/{id}', [TankController::class, 'update'])->name('tanks.update')->middleware('role:admin');
