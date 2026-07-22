@@ -27,6 +27,10 @@ if [ -n "$DB_URL_TO_PARSE" ]; then
     export DB_DATABASE=$(echo "$PARSED" | grep DB_DATABASE | cut -d= -f2)
     export DB_USERNAME=$(echo "$PARSED" | grep DB_USERNAME | cut -d= -f2)
     export DB_PASSWORD=$(echo "$PARSED" | grep DB_PASSWORD | cut -d= -f2-)
+    
+    # FORCE override database name to daily_report
+    export DB_DATABASE="daily_report"
+    echo "Database name forced to: daily_report"
 elif [ -n "$PGHOST" ]; then
     echo "Mapping Railway PG variables..."
     export DB_CONNECTION="pgsql"
@@ -35,6 +39,10 @@ elif [ -n "$PGHOST" ]; then
     export DB_DATABASE="$PGDATABASE"
     export DB_USERNAME="$PGUSER"
     export DB_PASSWORD="$PGPASSWORD"
+    
+    # FORCE override database name to daily_report
+    export DB_DATABASE="daily_report"
+    echo "Database name forced to: daily_report"
 fi
 
 # =============================================
