@@ -1094,9 +1094,9 @@
                         </div>
                     </div>
                     
-                    <div style="display: flex; gap: 1rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                         @foreach($photos as $index => $attachment)
-                            <div class="photo-item" style="flex: 1;">
+                            <div class="photo-item">
                                 <div style="font-size: 8.5pt; font-weight: 600; color: #64748b; margin-bottom: 0.5rem;">
                                     Foto {{ $index + 1 }}
                                 </div>
@@ -1107,7 +1107,7 @@
                         @endforeach
                         
                         @if($photoCount === 1)
-                            <div style="flex: 1;"></div>
+                            <div></div>
                         @endif
                     </div>
                 </div>
