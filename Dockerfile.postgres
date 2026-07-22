@@ -1,0 +1,13 @@
+FROM postgres:16-alpine
+
+# Set default environment variables
+ENV POSTGRES_DB=daily_report
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_PASSWORD=password
+ENV PGDATA=/var/lib/postgresql/data
+
+# Expose PostgreSQL port
+EXPOSE 5432
+
+# PostgreSQL will automatically create the database on first run
+# No custom entrypoint needed - official postgres image handles everything

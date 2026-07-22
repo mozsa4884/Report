@@ -38,61 +38,31 @@ elif [ -n "$PGHOST" ]; then
 fi
 
 # =============================================
-# PostgreSQL is required in production.
-#
-# A local .env is intentionally not copied into a Docker image. The hosting
-# service must therefore provide either DATABASE_URL/POSTGRES_URL, Railway's
-# PG* variables, or the standard DB_CONNECTION/DB_HOST/DB_* variables.
-# Never silently create a separate SQLite database in production: it makes a
-# successful deployment appear to have lost its data.
+# FORCE PostgreSQL ONLY - NO SQLITE FALLBACK!
 # =============================================
-# =============================================
-# FALLBACK: Jika tidak ada DB eksternal yang di-configure (masih 127.0.0.1)
-# Kita fallback ke SQLite agar container tetap bisa start dan jalan dengan sukses!
-# =============================================
+# Validate PostgreSQL configuration
 if [ -z "$DB_HOST" ] || [ "$DB_HOST" = "127.0.0.1" ]; then
     if [ -z "$DATABASE_URL" ] && [ -z "$PGHOST" ]; then
-        echo "No external database configured. Falling back to SQLite..."
-        export DB_CONNECTION="sqlite"
-        export DB_DATABASE="/var/www/database/database.sqlite"
-        # Buat file database sqlite jika belum ada
-        mkdir -p /var/www/database
-        touch /var/www/database/database.sqlite
-        chown -R www-data:www-data /var/www/database
+        echo "================================================"
+        echo "ERROR: PostgreSQL configuration is required!"
+        echo "================================================"
+        echo "Please set one of these in Railway:"
+        echo "  1. DATABASE_URL (auto from Railway PostgreSQL plugin)"
+        echo "  2. PGHOST, PGPORT, PGDATABASE, PGUSER, PGPASSWORD"
+        echo "  3. DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD"
+        echo ""
+        echo "SQLite is NOT supported in production!"
+        echo "================================================"
+        exit 1
     fi
 fi
 
+# Force PostgreSQL connection
+export DB_CONNECTION="pgsql"
+
 # =============================================
-# STEP 2: Generate file .env
+# STEP 2: Generate .env file (PostgreSQL ONLY!)
 # =============================================
-if [ "$DB_CONNECTION" = "sqlite" ]; then
-cat > /var/www/.env << ENVEOF
-APP_NAME="${APP_NAME:-Daily Report}"
-APP_ENV="${APP_ENV:-production}"
-APP_KEY="${APP_KEY:-}"
-APP_DEBUG="${APP_DEBUG:-true}"
-APP_URL="${APP_URL:-http://localhost}"
-
-LOG_CHANNEL=stack
-LOG_LEVEL=error
-
-DB_CONNECTION=sqlite
-DB_DATABASE=/var/www/database/database.sqlite
-
-SESSION_DRIVER=file
-SESSION_LIFETIME=120
-CACHE_STORE=file
-QUEUE_CONNECTION=sync
-FILESYSTEM_DISK="${FILESYSTEM_DISK:-local}"
-AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-}"
-AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-}"
-AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
-AWS_BUCKET="${AWS_BUCKET:-}"
-AWS_ENDPOINT="${AWS_ENDPOINT:-}"
-AWS_URL="${AWS_URL:-}"
-AWS_USE_PATH_STYLE_ENDPOINT="${AWS_USE_PATH_STYLE_ENDPOINT:-false}"
-ENVEOF
-else
 cat > /var/www/.env << ENVEOF
 APP_NAME="${APP_NAME:-Daily Report}"
 APP_ENV="${APP_ENV:-production}"
@@ -123,18 +93,13 @@ AWS_ENDPOINT="${AWS_ENDPOINT:-}"
 AWS_URL="${AWS_URL:-}"
 AWS_USE_PATH_STYLE_ENDPOINT="${AWS_USE_PATH_STYLE_ENDPOINT:-false}"
 ENVEOF
-fi
 
 echo "=============================="
 echo "DB Config Applied:"
-echo "  CONNECTION : $DB_CONNECTION"
-if [ "$DB_CONNECTION" != "sqlite" ]; then
+echo "  CONNECTION : pgsql"
 echo "  HOST       : $DB_HOST"
 echo "  PORT       : $DB_PORT"
 echo "  DATABASE   : $DB_DATABASE"
-else
-echo "  DATABASE   : SQLite File"
-fi
 echo "=============================="
 echo "Storage Config:"
 echo "  FILESYSTEM_DISK: ${FILESYSTEM_DISK:-local}"
@@ -160,22 +125,30 @@ php artisan config:clear
 php artisan view:clear
 
 # =============================================
-# STEP 5: Wait for PostgreSQL to be ready
+# STEP 5: Wait for PostgreSQL to be ready (REQUIRED!)
 # =============================================
-if [ "$DB_CONNECTION" = "pgsql" ]; then
-    echo "Waiting for PostgreSQL database to be ready..."
-    MAX_TRIES=15
-    COUNT=0
-    until php artisan db:show > /dev/null 2>&1; do
-        COUNT=$((COUNT + 1))
-        if [ $COUNT -ge $MAX_TRIES ]; then
-            echo "PostgreSQL is not available after $MAX_TRIES attempts."
-            exit 1
-        fi
-        echo "Database not ready yet (attempt $COUNT/$MAX_TRIES), retrying in 2s..."
-        sleep 2
-    done
-fi
+echo "Waiting for PostgreSQL database to be ready..."
+MAX_TRIES=15
+COUNT=0
+until php artisan db:show > /dev/null 2>&1; do
+    COUNT=$((COUNT + 1))
+    if [ $COUNT -ge $MAX_TRIES ]; then
+        echo "================================================"
+        echo "ERROR: PostgreSQL is not available!"
+        echo "================================================"
+        echo "After $MAX_TRIES attempts, could not connect to:"
+        echo "  Host: $DB_HOST"
+        echo "  Port: $DB_PORT"
+        echo "  Database: $DB_DATABASE"
+        echo ""
+        echo "Please check Railway PostgreSQL service is running."
+        echo "================================================"
+        exit 1
+    fi
+    echo "Database not ready yet (attempt $COUNT/$MAX_TRIES), retrying in 2s..."
+    sleep 2
+done
+echo "PostgreSQL connection successful!"
 
 # =============================================
 # STEP 6: Jalankan migrasi dan seeder
