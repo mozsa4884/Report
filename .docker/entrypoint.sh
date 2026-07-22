@@ -206,34 +206,20 @@ until php artisan db:show > /dev/null 2>&1; do
     COUNT=$((COUNT + 1))
     if [ $COUNT -ge $MAX_TRIES ]; then
         echo "================================================"
-        echo "WARNING: Cannot connect to database '$DB_DATABASE'!"
+        echo "ERROR: Laravel cannot connect to database!"
         echo "================================================"
-        echo "After $MAX_TRIES attempts, trying fallback to 'railway' database..."
+        echo "After $MAX_TRIES attempts, could not connect to:"
+        echo "  Host: $DB_HOST"
+        echo "  Port: $DB_PORT"
+        echo "  Database: $DB_DATABASE"
+        echo "  User: $DB_USERNAME"
+        echo ""
+        echo "Possible solutions:"
+        echo "  1. Check PostgreSQL service is 'Online' in Railway"
+        echo "  2. Grant permissions: GRANT ALL ON DATABASE $DB_DATABASE TO $DB_USERNAME;"
+        echo "  3. Check database exists and user has access"
         echo "================================================"
-        
-        # Fallback to 'railway' database
-        export DB_DATABASE="railway"
-        
-        # Regenerate .env with railway database
-        sed -i "s/DB_DATABASE=daily_report/DB_DATABASE=railway/g" /var/www/.env
-        php artisan config:clear
-        
-        echo "Testing connection to fallback database 'railway'..."
-        if php artisan db:show > /dev/null 2>&1; then
-            echo "Successfully connected to 'railway' database!"
-            echo "WARNING: Using 'railway' database instead of 'daily_report'"
-            break
-        else
-            echo "================================================"
-            echo "ERROR: Cannot connect to any database!"
-            echo "================================================"
-            echo "Tried: daily_report, railway"
-            echo "  Host: $DB_HOST"
-            echo "  Port: $DB_PORT"
-            echo "  User: $DB_USERNAME"
-            echo "================================================"
-            exit 1
-        fi
+        exit 1
     fi
     echo "Laravel connection test to '$DB_DATABASE' (attempt $COUNT/$MAX_TRIES), retrying in 2s..."
     sleep 2
