@@ -1028,12 +1028,36 @@ document.addEventListener('DOMContentLoaded', function () {
     const addSelectedPhotos = async (input) => {
         const cell = input.closest('.photo-upload-cell');
         const availableSlots = Math.max(0, 2 - cell.querySelectorAll('.saved-photo-card').length);
-        
-        // TEMPORARILY DISABLE COMPRESSION - just use original files
         const newFiles = Array.from(input.files).slice(0, availableSlots);
-        input._selectedPhotos = [...(input._selectedPhotos ?? []), ...newFiles];
+        const compressedFiles = [];
+
+        for (const file of newFiles) {
+            try {
+                let processed = file;
+                if (typeof imageCompression === 'function') {
+                    const compressed = await imageCompression(file, {
+                        maxSizeMB: 0.65,
+                        maxWidthOrHeight: 1920,
+                        useWebWorker: true,
+                        initialQuality: 0.8,
+                    });
+                    processed = new File([compressed], file.name, {
+                        type: compressed.type || file.type,
+                        lastModified: file.lastModified,
+                    });
+                }
+
+                if (processed.size > 1024 * 1024) {
+                    throw new Error('Ukuran foto masih melebihi 1 MB setelah dikompres.');
+                }
+                compressedFiles.push(processed);
+            } catch (error) {
+                alert(`Foto "${file.name}" tidak dapat digunakan: ${error.message}`);
+            }
+        }
+
+        input._selectedPhotos = [...(input._selectedPhotos ?? []), ...compressedFiles];
         renderSelectedPhotos(input);
-        return;
     };
 
     document.addEventListener('change', async (event) => {
@@ -1074,6 +1098,17 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     document.querySelectorAll('input[data-photo-input]').forEach(renderSelectedPhotos);
+
+    document.getElementById('reportForm').addEventListener('submit', event => {
+        const totalPhotoBytes = Array.from(document.querySelectorAll('input[data-photo-input]'))
+            .flatMap(input => Array.from(input.files))
+            .reduce((total, file) => total + file.size, 0);
+
+        if (totalPhotoBytes > 20 * 1024 * 1024) {
+            event.preventDefault();
+            alert('Total ukuran foto maksimal 20 MB. Kurangi jumlah foto atau pilih foto lain.');
+        }
+    });
 
     // ===== Kapasitas Tangki Widget - SOH Input Auto-Calculate =====
     const tankCapacities = @json($tanks->groupBy('code')->map(fn($g) => $g->first()?->capacity ?? 0));
