@@ -15,6 +15,7 @@ RUN apk update && apk add --no-cache \
     git \
     curl \
     postgresql-dev \
+    postgresql-client \
     oniguruma-dev \
     nginx \
     nodejs \

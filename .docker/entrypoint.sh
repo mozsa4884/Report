@@ -142,24 +142,73 @@ php artisan view:clear
 # STEP 5: Wait for PostgreSQL to be ready (REQUIRED!)
 # =============================================
 echo "Waiting for PostgreSQL database to be ready..."
-MAX_TRIES=15
+echo "Trying to connect to: $DB_HOST:$DB_PORT/$DB_DATABASE"
+
+MAX_TRIES=30
+COUNT=0
+
+# Wait longer before first attempt (give PostgreSQL time to boot)
+sleep 3
+
+# First, check if we can connect to PostgreSQL server (not specific database)
+echo "Checking PostgreSQL server availability..."
+until PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME" -d postgres -c '\l' > /dev/null 2>&1; do
+    COUNT=$((COUNT + 1))
+    if [ $COUNT -ge 10 ]; then
+        echo "================================================"
+        echo "ERROR: PostgreSQL server not responding!"
+        echo "================================================"
+        echo "Cannot connect to PostgreSQL server at:"
+        echo "  Host: $DB_HOST"
+        echo "  Port: $DB_PORT"
+        echo "  User: $DB_USERNAME"
+        echo ""
+        echo "Check that PostgreSQL service is 'Online' in Railway."
+        echo "================================================"
+        exit 1
+    fi
+    echo "PostgreSQL server not ready (attempt $COUNT/10), retrying in 3s..."
+    sleep 3
+done
+echo "PostgreSQL server is online!"
+
+# Check if database exists, create if not
+echo "Checking if database '$DB_DATABASE' exists..."
+DB_EXISTS=$(PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME" -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='$DB_DATABASE'" 2>/dev/null)
+
+if [ "$DB_EXISTS" != "1" ]; then
+    echo "Database '$DB_DATABASE' not found. Creating..."
+    PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME" -d postgres -c "CREATE DATABASE $DB_DATABASE" || {
+        echo "================================================"
+        echo "ERROR: Failed to create database '$DB_DATABASE'!"
+        echo "================================================"
+        echo "Please create it manually in Railway PostgreSQL service."
+        echo "================================================"
+        exit 1
+    }
+    echo "Database '$DB_DATABASE' created successfully!"
+else
+    echo "Database '$DB_DATABASE' already exists."
+fi
+
+# Now check Laravel can connect
+echo "Testing Laravel database connection..."
 COUNT=0
 until php artisan db:show > /dev/null 2>&1; do
     COUNT=$((COUNT + 1))
     if [ $COUNT -ge $MAX_TRIES ]; then
         echo "================================================"
-        echo "ERROR: Cannot connect to PostgreSQL!"
+        echo "ERROR: Laravel cannot connect to database!"
         echo "================================================"
         echo "After $MAX_TRIES attempts, could not connect to:"
         echo "  Host: $DB_HOST"
         echo "  Port: $DB_PORT"
         echo "  Database: $DB_DATABASE"
-        echo ""
-        echo "Check that PostgreSQL service is running in Railway."
+        echo "  User: $DB_USERNAME"
         echo "================================================"
         exit 1
     fi
-    echo "Database not ready yet (attempt $COUNT/$MAX_TRIES), retrying in 2s..."
+    echo "Laravel connection test (attempt $COUNT/$MAX_TRIES), retrying in 2s..."
     sleep 2
 done
 echo "PostgreSQL connection successful!"
