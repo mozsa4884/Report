@@ -1,0 +1,15 @@
+FROM minio/minio:latest
+
+# Set environment variables
+ENV MINIO_ROOT_USER=minioadmin
+ENV MINIO_ROOT_PASSWORD=minioadmin123
+ENV MINIO_BROWSER=on
+
+# Expose ports
+EXPOSE 9000 9001
+
+# Create data directory
+RUN mkdir -p /data
+
+# Start MinIO server
+CMD ["minio", "server", "/data", "--console-address", ":9001", "--address", ":9000"]
