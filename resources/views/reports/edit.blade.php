@@ -1045,33 +1045,39 @@ document.addEventListener('DOMContentLoaded', function () {
             
             for (const file of newFiles) {
                 if (file.type.startsWith('image/')) {
-                    // Compress with browser-image-compression library
-                    const options = {
-                        maxSizeMB: 0.8,          // max 800KB
-                        maxWidthOrHeight: 1920,   // max dimension
-                        useWebWorker: true,       // faster with worker
-                        fileType: 'image/jpeg',   // convert to JPEG
-                        initialQuality: 0.85      // good quality
-                    };
-                    
-                    const compressed = await imageCompression(file, options);
-                    
-                    // Change filename extension to .jpg
-                    const newFileName = file.name.replace(/\.(png|webp|jpeg|jpg)$/i, '.jpg');
-                    
-                    const finalFile = new File([compressed], newFileName, {
-                        type: 'image/jpeg',
-                        lastModified: Date.now()
-                    });
-                    
-                    // Log compression results
-                    console.log('Image compressed:', {
-                        original: (file.size / 1024).toFixed(2) + ' KB',
-                        compressed: (finalFile.size / 1024).toFixed(2) + ' KB',
-                        ratio: ((1 - finalFile.size / file.size) * 100).toFixed(1) + '% smaller'
-                    });
-                    
-                    compressedFiles.push(finalFile);
+                    try {
+                        // Compress with browser-image-compression library
+                        const options = {
+                            maxSizeMB: 0.8,          // max 800KB
+                            maxWidthOrHeight: 1920,   // max dimension
+                            useWebWorker: true,       // faster with worker
+                            fileType: 'image/jpeg',   // convert to JPEG
+                            initialQuality: 0.85      // good quality
+                        };
+                        
+                        const compressed = await imageCompression(file, options);
+                        
+                        // Change filename extension to .jpg
+                        const newFileName = file.name.replace(/\.(png|webp|jpeg|jpg)$/i, '.jpg');
+                        
+                        const finalFile = new File([compressed], newFileName, {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        });
+                        
+                        // Log compression results
+                        console.log('Image compressed:', {
+                            original: (file.size / 1024).toFixed(2) + ' KB',
+                            compressed: (finalFile.size / 1024).toFixed(2) + ' KB',
+                            ratio: ((1 - finalFile.size / file.size) * 100).toFixed(1) + '% smaller'
+                        });
+                        
+                        compressedFiles.push(finalFile);
+                    } catch (err) {
+                        console.error('Compression failed for', file.name, '- using original', err);
+                        // If compression fails, use original file
+                        compressedFiles.push(file);
+                    }
                 } else {
                     compressedFiles.push(file);
                 }
@@ -1085,8 +1091,12 @@ document.addEventListener('DOMContentLoaded', function () {
             renderSelectedPhotos(input);
         } catch (error) {
             console.error('Compression error:', error);
-            list.removeChild(loadingItem);
-            alert('Gagal mengompres gambar: ' + error.message);
+            if (list.contains(loadingItem)) {
+                list.removeChild(loadingItem);
+            }
+            // Fallback: use original files without compression
+            input._selectedPhotos = [...(input._selectedPhotos ?? []), ...newFiles];
+            renderSelectedPhotos(input);
         }
     };
 
