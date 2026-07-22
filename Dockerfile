@@ -88,6 +88,15 @@ RUN composer dump-autoload --optimize
 # Configure Nginx to run as www-data user
 RUN sed -i 's/user nginx;/user www-data;/g' /etc/nginx/nginx.conf
 
+# Create Nginx temporary directories with proper permissions
+RUN mkdir -p \
+    /var/lib/nginx/tmp/client_body \
+    /var/lib/nginx/tmp/proxy \
+    /var/lib/nginx/tmp/fastcgi \
+    /var/lib/nginx/tmp/uwsgi \
+    /var/lib/nginx/tmp/scgi && \
+    chown -R www-data:www-data /var/lib/nginx
+
 # Recreate Laravel runtime directories excluded from the build context. Laravel
 # requires these paths even when they contain no cached files yet.
 RUN mkdir -p \
