@@ -166,15 +166,33 @@ class ReportController extends Controller
                 ->with('success', 'Laporan harian berhasil dibuat sebagai Draft.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
-            \Log::error('Validation error in store', ['errors' => $e->errors()]);
+            \Log::error('Validation error in store', [
+                'errors' => $e->errors(),
+                'request' => $request->all(),
+            ]);
             return back()->withInput()->withErrors($e->errors());
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Failed to store report', [
                 'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
-                'memory' => memory_get_usage(true) / 1024 / 1024 . ' MB'
+                'memory' => memory_get_usage(true) / 1024 / 1024 . ' MB',
+                'request_data' => [
+                    'date' => $request->date ?? 'not set',
+                    'site_id' => $request->site_id ?? 'not set',
+                    'has_items' => !empty($request->items),
+                    'has_transfers' => !empty($request->transfers),
+                    'has_files' => $request->hasFile('items.*.photos.*') || $request->hasFile('transfers.*.photos.*'),
+                ]
             ]);
+            
+            // Return detailed error for debugging
+            if (config('app.debug')) {
+                return back()->withInput()->with('error', 'Error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+            }
+            
             return back()->withInput()->with('error', 'Gagal membuat laporan: ' . $e->getMessage());
         }
     }
