@@ -1055,7 +1055,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     };
                     
                     const compressed = await imageCompression(file, options);
-                    const finalFile = new File([compressed], file.name, {
+                    
+                    // Change filename extension to .jpg
+                    const newFileName = file.name.replace(/\.(png|webp|jpeg|jpg)$/i, '.jpg');
+                    
+                    const finalFile = new File([compressed], newFileName, {
                         type: 'image/jpeg',
                         lastModified: Date.now()
                     });
