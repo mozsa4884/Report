@@ -26,8 +26,7 @@ RUN docker-php-ext-install pdo pdo_pgsql mbstring zip exif pcntl intl
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 RUN docker-php-ext-install gd
 
-# Configure OPcache: always revalidate files so a new deploy is never served
-# with stale cached bytecode from a previous deployment
+# Configure OPcache and PHP settings for production uploads
 RUN { \
     echo 'opcache.enable=1'; \
     echo 'opcache.validate_timestamps=1'; \
@@ -42,7 +41,20 @@ RUN { \
     echo 'max_file_uploads=50'; \
     echo 'max_execution_time=300'; \
     echo 'max_input_time=300'; \
+    echo 'output_buffering=4096'; \
 } > /usr/local/etc/php/conf.d/opcache.ini
+
+# Configure PHP-FPM for better stability
+RUN { \
+    echo '[www]'; \
+    echo 'pm = dynamic'; \
+    echo 'pm.max_children = 20'; \
+    echo 'pm.start_servers = 4'; \
+    echo 'pm.min_spare_servers = 2'; \
+    echo 'pm.max_spare_servers = 6'; \
+    echo 'pm.max_requests = 500'; \
+    echo 'request_terminate_timeout = 300s'; \
+} > /usr/local/etc/php-fpm.d/zz-custom.conf
 
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
