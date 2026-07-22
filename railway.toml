@@ -1,0 +1,7 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "docker-compose up -d db minio minio-init && /usr/local/bin/entrypoint.sh"
+restartPolicyType = "always"
