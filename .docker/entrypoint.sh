@@ -70,7 +70,7 @@ cat > /var/www/.env << ENVEOF
 APP_NAME="${APP_NAME:-Daily Report}"
 APP_ENV="${APP_ENV:-production}"
 APP_KEY="${APP_KEY:-}"
-APP_DEBUG="${APP_DEBUG:-false}"
+APP_DEBUG="${APP_DEBUG:-true}"
 APP_URL="${APP_URL:-http://localhost}"
 
 LOG_CHANNEL=stack
@@ -97,7 +97,7 @@ cat > /var/www/.env << ENVEOF
 APP_NAME="${APP_NAME:-Daily Report}"
 APP_ENV="${APP_ENV:-production}"
 APP_KEY="${APP_KEY:-}"
-APP_DEBUG="${APP_DEBUG:-false}"
+APP_DEBUG="${APP_DEBUG:-true}"
 APP_URL="${APP_URL:-http://localhost}"
 
 LOG_CHANNEL=stack
@@ -180,8 +180,11 @@ fi
 # =============================================
 # STEP 6: Jalankan migrasi dan seeder
 # =============================================
-echo "Running migrations with seed..."
-php artisan migrate --seed --force
+echo "Running migrations..."
+php artisan migrate --force
+
+echo "Running seeders (if fails, continue anyway)..."
+php artisan db:seed --force || echo "Seeder failed, but continuing..."
 
 # Compiled Blade views can otherwise survive a container restart when storage
 # is persistent, making a deployment appear to run an older report form.
