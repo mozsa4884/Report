@@ -7,12 +7,18 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    public function showLogin()
+    public function showLoginForm()
     {
         if (Auth::check()) {
             return redirect()->route('dashboard');
         }
         return view('auth.login');
+    }
+
+    // Alias for consistency
+    public function showLogin()
+    {
+        return $this->showLoginForm();
     }
 
     public function login(Request $request)
