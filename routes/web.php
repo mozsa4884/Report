@@ -78,6 +78,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/analytics', [DashboardController::class, 'analytics'])->name('reports.analytics')->middleware('role:gl,spv,admin');
     
     // Reports
     Route::resource('reports', ReportController::class);
