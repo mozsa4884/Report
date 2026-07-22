@@ -139,12 +139,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/tanks/{id}/calibration', [TankController::class, 'updateCalibration'])->name('tanks.calibration.update')->middleware('role:admin');
     
     // Users
-    Route::get('/users', [UserController::class, 'index'])->name('users.index')->middleware('role:admin');
-    Route::get('/users/create', [UserController::class, 'create'])->name('users.create')->middleware('role:admin');
-    Route::post('/users', [UserController::class, 'store'])->name('users.store')->middleware('role:admin');
-    Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit')->middleware('role:admin');
-    Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update')->middleware('role:admin');
-    Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy')->middleware('role:admin');
+    Route::get('/users', [UserController::class, 'index'])->name('users.index')->middleware('role:spv,admin');
+    Route::get('/users/create', [UserController::class, 'create'])->name('users.create')->middleware('role:spv,admin');
+    Route::post('/users', [UserController::class, 'store'])->name('users.store')->middleware('role:spv,admin');
+    Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit')->middleware('role:spv,admin');
+    Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update')->middleware('role:spv,admin');
+    Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy')->middleware('role:spv,admin');
     
     // Sites
     Route::get('/sites', [\App\Http\Controllers\SiteController::class, 'index'])->name('sites.index')->middleware('role:spv,admin');

@@ -42,7 +42,7 @@
                         <td>{{ $index + 1 }}</td>
                         <td><strong>{{ $tank->code }}</strong></td>
                         <td>{{ $tank->main_hole }}</td>
-                        <td>{{ $tank->capacity ? number_format($tank->capacity) . ' L' : '-' }}</td>
+                        <td>{{ $tank->capacity > 0 ? number_format($tank->capacity) . ' L' : '-' }}</td>
                         <td>
                             @if($tank->calibrations_count ?? $tank->calibrations()->count())
                                 <span class="badge badge-submitted" style="background-color: var(--info-light); color: #1e3a8a;">
