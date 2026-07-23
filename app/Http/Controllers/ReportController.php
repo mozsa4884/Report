@@ -25,10 +25,19 @@ class ReportController extends Controller
             $sites = Site::where('is_active', true)->orderBy('name')->get();
         }
         
-        // Get selected site_id from request
+        // Get filter parameters
         $siteId = $request->get('site_id');
+        $search = $request->get('search');
+        $status = $request->get('status');
+        $sortOrder = $request->get('sort', 'desc'); // desc = terbaru, asc = terlama
+        $perPage = $request->get('per_page', 15); // default 15
         
-        $query = DailyReport::with(['fuelman', 'gl', 'spv', 'site'])->orderBy('date', 'desc');
+        // Validate per_page
+        if (!in_array($perPage, [10, 25, 50, 100])) {
+            $perPage = 15;
+        }
+        
+        $query = DailyReport::with(['fuelman', 'gl', 'spv', 'site']);
 
         // Fuelman only sees their own reports
         if ($user->isFuelman()) {
@@ -39,10 +48,34 @@ class ReportController extends Controller
         if (($user->isGl() || $user->isSpv()) && $siteId) {
             $query->where('site_id', $siteId);
         }
+        
+        // Filter by status if selected
+        if ($status) {
+            $query->where('status', $status);
+        }
+        
+        // Search filter - search in date, fuelman name, gl name, spv name
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->whereDate('date', 'like', "%{$search}%")
+                  ->orWhereHas('fuelman', function($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('gl', function($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('spv', function($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+        
+        // Sort order
+        $query->orderBy('date', $sortOrder);
 
-        $reports = $query->paginate(15);
+        $reports = $query->paginate($perPage);
 
-        return view('reports.index', compact('reports', 'sites', 'siteId'));
+        return view('reports.index', compact('reports', 'sites', 'siteId', 'search', 'status', 'sortOrder', 'perPage'));
     }
 
     public function create()

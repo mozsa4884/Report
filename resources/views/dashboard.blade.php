@@ -165,51 +165,68 @@
 @endif
 
 <!-- SPV FUEL STATUS WIDGET -->
-@if(Auth::user()->isSpv() && $latestApprovedReport)
+@if(Auth::user()->isSpv())
     <div class="card-table-container">
-        <h2 class="card-title">Kondisi Stok & Sounding Terkini (Laporan Terakhir: {{ $latestApprovedReport->date->format('d-m-Y') }})</h2>
-        <div class="table-responsive">
-            <table class="table-list">
-                <thead>
-                    <tr>
-                        <th>Tangki</th>
-                        <th>Main Hole</th>
-                        <th>Sounding Pagi</th>
-                        <th>Liter Pagi</th>
-                        <th>Sounding Sore</th>
-                        <th>Liter Sore</th>
-                        <th>Flow Meter Pakai</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($tankStatus as $item)
+        @if($todayReport)
+            <h2 class="card-title">Kondisi Stok & Sounding Terkini (Laporan Hari Ini: {{ $todayReport->date->format('d-m-Y') }})</h2>
+            <div class="table-responsive">
+                <table class="table-list">
+                    <thead>
                         <tr>
-                            <td><strong>{{ $item->tank->code }}</strong></td>
-                            <td>{{ $item->tank->main_hole }}</td>
-                            <td>{{ $item->sounding_pagi !== null ? number_format($item->sounding_pagi, 1, ',', '.') . ' cm' : '-' }}</td>
-                            <td>{{ $item->liter_pagi !== null ? number_format($item->liter_pagi, 0, ',', '.') . ' L' : '-' }}</td>
-                            <td>{{ $item->sounding_sore !== null ? number_format($item->sounding_sore, 1, ',', '.') . ' cm' : '-' }}</td>
-                            <td>{{ $item->liter_sore !== null ? number_format($item->liter_sore, 0, ',', '.') . ' L' : '-' }}</td>
-                            <td>
-                                @if($item->fm_pakai !== null)
-                                    <span style="color: {{ $item->fm_pakai > 0 ? 'var(--success)' : ($item->fm_pakai < 0 ? 'var(--danger)' : 'inherit') }}">
-                                        {{ number_format($item->fm_pakai, 0, ',', '.') }} L
-                                    </span>
-                                @else
-                                    -
-                                @endif
-                            </td>
+                            <th>Tangki</th>
+                            <th>Main Hole</th>
+                            <th>Sounding Pagi</th>
+                            <th>Liter Pagi</th>
+                            <th>Sounding Sore</th>
+                            <th>Liter Sore</th>
+                            <th>Flow Meter Pakai</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody>
+                        @foreach($tankStatus as $item)
+                            <tr>
+                                <td><strong>{{ $item->tank->code }}</strong></td>
+                                <td>{{ $item->tank->main_hole }}</td>
+                                <td>{{ $item->sounding_pagi !== null ? number_format($item->sounding_pagi, 1, ',', '.') . ' cm' : '-' }}</td>
+                                <td>{{ $item->liter_pagi !== null ? number_format($item->liter_pagi, 0, ',', '.') . ' L' : '-' }}</td>
+                                <td>{{ $item->sounding_sore !== null ? number_format($item->sounding_sore, 1, ',', '.') . ' cm' : '-' }}</td>
+                                <td>{{ $item->liter_sore !== null ? number_format($item->liter_sore, 0, ',', '.') . ' L' : '-' }}</td>
+                                <td>
+                                    @if($item->fm_pakai !== null)
+                                        <span style="color: {{ $item->fm_pakai > 0 ? 'var(--success)' : ($item->fm_pakai < 0 ? 'var(--danger)' : 'inherit') }}">
+                                            {{ number_format($item->fm_pakai, 0, ',', '.') }} L
+                                        </span>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <h2 class="card-title">Kondisi Stok & Sounding Terkini</h2>
+            <div style="padding: 3rem 1rem; text-align: center; color: var(--text-muted);">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 1rem; opacity: 0.3;">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                <p style="margin: 0; font-size: 1.1rem;">Belum ada laporan untuk hari ini ({{ date('d-m-Y') }})</p>
+            </div>
+        @endif
     </div>
 @endif
 
 <!-- RECENT REPORTS -->
 <div class="card-table-container">
-    <h2 class="card-title">Laporan Terbaru</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 class="card-title" style="margin: 0;">Laporan Terbaru</h2>
+        <a href="{{ route('reports.index') }}" class="btn btn-secondary" style="font-size: 0.85rem; padding: 6px 14px;">
+            Lihat Semua Laporan
+        </a>
+    </div>
     <div class="table-responsive">
         <table class="table-list">
             <thead>
@@ -217,7 +234,7 @@
                     <th>Tanggal Laporan</th>
                     <th>Pembuat (Fuelman)</th>
                     <th>Status</th>
-                    <th>Aksi</th>
+                    <th style="text-align: center;">Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -233,26 +250,43 @@
                             @elseif($report->status === 'verified')
                                 <span class="badge badge-verified">Menunggu SPV</span>
                             @elseif($report->status === 'approved')
-                                <span class="badge badge-approved">Disetujui (Approved)</span>
+                                <span class="badge badge-approved">Disetujui</span>
                             @elseif($report->status === 'rejected')
                                 <span class="badge badge-rejected">Direvisi</span>
                             @endif
                         </td>
                         <td>
-                            <div style="display: flex; gap: 0.25rem; align-items: center;">
-                                <a href="{{ route('reports.show', $report->id) }}" class="btn btn-secondary" style="font-size: 0.8rem; padding: 6px 12px; margin: 0;">
-                                    Detail
+                            <div style="display: flex; gap: 0.5rem; align-items: center; justify-content: center;">
+                                <!-- Detail Button -->
+                                <a href="{{ route('reports.show', $report->id) }}" class="icon-btn icon-btn-info" title="Detail">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                    </svg>
                                 </a>
+                                
+                                <!-- Edit Button (Fuelman only for draft/rejected) -->
                                 @if(Auth::user()->isFuelman() && in_array($report->status, ['draft', 'rejected']))
-                                    <a href="{{ route('reports.edit', $report->id) }}" class="btn btn-primary" style="font-size: 0.8rem; padding: 6px 12px; margin: 0;">
-                                        Ubah
+                                    <a href="{{ route('reports.edit', $report->id) }}" class="icon-btn icon-btn-primary" title="Ubah">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                        </svg>
                                     </a>
                                 @endif
+                                
+                                <!-- Delete Button -->
                                 @if((Auth::user()->isFuelman() && $report->fuelman_id === Auth::id() && in_array($report->status, ['draft', 'rejected'])) || Auth::user()->isSpv())
                                     <form action="{{ route('reports.destroy', $report->id) }}" method="POST" onsubmit="return confirmDelete(event, this);" style="margin: 0; display: inline-flex;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger" style="font-size: 0.8rem; padding: 6px 12px; margin: 0;">Hapus</button>
+                                        <button type="submit" class="icon-btn icon-btn-danger" title="Hapus">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="3 6 5 6 21 6"></polyline>
+                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                            </svg>
+                                        </button>
                                     </form>
                                 @endif
                             </div>

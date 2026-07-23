@@ -1660,3 +1660,74 @@ body.dark-mode .brand-logo {
     width: 20px;
     height: 20px;
 }
+
+/* Icon Button Styles - Rounded Square Icons */
+.icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    background: none;
+    padding: 0;
+}
+
+.icon-btn:hover {
+    transform: translateY(-2px);
+}
+
+.icon-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.icon-btn-info {
+    background-color: #e0f2fe;
+    color: #0369a1;
+}
+
+.icon-btn-info:hover {
+    background-color: #bae6fd;
+    box-shadow: 0 4px 8px rgba(3, 105, 161, 0.2);
+}
+
+.icon-btn-primary {
+    background-color: #ccfbf1;
+    color: #0f766e;
+}
+
+.icon-btn-primary:hover {
+    background-color: #99f6e4;
+    box-shadow: 0 4px 8px rgba(15, 118, 110, 0.2);
+}
+
+.icon-btn-danger {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+.icon-btn-danger:hover {
+    background-color: #fecaca;
+    box-shadow: 0 4px 8px rgba(220, 38, 38, 0.2);
+}
+
+/* Dark mode icon buttons */
+html[data-theme="dark"] .icon-btn-info {
+    background-color: rgba(3, 105, 161, 0.2);
+    color: #7dd3fc;
+}
+
+html[data-theme="dark"] .icon-btn-primary {
+    background-color: rgba(15, 118, 110, 0.2);
+    color: #5eead4;
+}
+
+html[data-theme="dark"] .icon-btn-danger {
+    background-color: rgba(220, 38, 38, 0.2);
+    color: #fca5a5;
+}

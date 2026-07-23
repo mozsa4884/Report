@@ -82,18 +82,20 @@ class DashboardController extends Controller
                 ->orderBy('date', 'desc')
                 ->first();
 
-            // Sounding status for active tanks (latest approved report values)
-            $latestReport = DailyReport::orderBy('date', 'desc')
+            // Sounding status for active tanks (TODAY'S report only)
+            $today = date('Y-m-d');
+            $todayReport = DailyReport::whereDate('date', $today)
+                ->orderBy('created_at', 'desc')
                 ->first();
 
             $tankStatus = [];
-            if ($latestReport) {
+            if ($todayReport) {
                 $tankStatus = DailyReportItem::with('tank')
-                    ->where('daily_report_id', $latestReport->id)
+                    ->where('daily_report_id', $todayReport->id)
                     ->get();
             }
 
-            return view('dashboard', compact('stats', 'recentReports', 'pendingReports', 'totalUsage', 'tankStatus', 'latestReport', 'latestApprovedReport'));
+            return view('dashboard', compact('stats', 'recentReports', 'pendingReports', 'totalUsage', 'tankStatus', 'todayReport', 'latestApprovedReport'));
         }
 
         abort(403);

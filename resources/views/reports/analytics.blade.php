@@ -234,7 +234,7 @@
 </div>
 
 <div class="card-table-container" style="margin-bottom: 1.5rem;">
-    <form method="GET" action="{{ route('analytics') }}" class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+    <form method="GET" action="{{ route('reports.analytics') }}" class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
         <div class="form-group" style="margin-bottom: 0;">
             <label for="site_id">Site / Lokasi <span style="color: var(--danger);">*</span></label>
             <select name="site_id" id="site_id" class="form-control" onchange="this.form.submit()" required>
