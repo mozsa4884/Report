@@ -735,6 +735,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     console.error('Error fetching volume calibration:', err);
                 });
         });
+        
+        // Auto-trigger for saved data on page load (GL/SPV only)
+        if (!isFuelman && input.value && input.value !== '') {
+            const parentRow = input.closest('tr');
+            const tankIdInput = parentRow.querySelector('input[name$="[tank_id]"]');
+            if (tankIdInput && tankIdInput.value) {
+                input.dispatchEvent(new Event('change'));
+            }
+        }
     });
 
     // Flow Meter usage calculation
