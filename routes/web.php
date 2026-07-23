@@ -129,14 +129,14 @@ Route::middleware('auth')->group(function () {
     // Tanks
     Route::get('/tanks', [TankController::class, 'index'])->name('tanks.index')->middleware('role:gl,spv,admin');
     Route::get('/tanks/monitoring', [TankController::class, 'monitoring'])->name('tanks.monitoring')->middleware('role:gl,spv,admin');
-    Route::get('/tanks/create', [TankController::class, 'create'])->name('tanks.create')->middleware('role:admin');
-    Route::post('/tanks', [TankController::class, 'store'])->name('tanks.store')->middleware('role:admin');
+    Route::get('/tanks/create', [TankController::class, 'create'])->name('tanks.create')->middleware('role:spv,admin');
+    Route::post('/tanks', [TankController::class, 'store'])->name('tanks.store')->middleware('role:spv,admin');
     Route::get('/tanks/{id}', [TankController::class, 'show'])->name('tanks.show')->middleware('role:gl,spv,admin');
-    Route::get('/tanks/{id}/edit', [TankController::class, 'edit'])->name('tanks.edit')->middleware('role:admin');
-    Route::put('/tanks/{id}', [TankController::class, 'update'])->name('tanks.update')->middleware('role:admin');
-    Route::delete('/tanks/{id}', [TankController::class, 'destroy'])->name('tanks.destroy')->middleware('role:admin');
-    Route::get('/tanks/{id}/calibration', [TankController::class, 'calibration'])->name('tanks.calibration')->middleware('role:admin');
-    Route::post('/tanks/{id}/calibration', [TankController::class, 'updateCalibration'])->name('tanks.calibration.update')->middleware('role:admin');
+    Route::get('/tanks/{id}/edit', [TankController::class, 'edit'])->name('tanks.edit')->middleware('role:spv,admin');
+    Route::put('/tanks/{id}', [TankController::class, 'update'])->name('tanks.update')->middleware('role:spv,admin');
+    Route::delete('/tanks/{id}', [TankController::class, 'destroy'])->name('tanks.destroy')->middleware('role:spv,admin');
+    Route::get('/tanks/{id}/calibration', [TankController::class, 'calibration'])->name('tanks.calibration')->middleware('role:spv,admin');
+    Route::post('/tanks/{id}/calibration', [TankController::class, 'updateCalibration'])->name('tanks.calibration.update')->middleware('role:spv,admin');
     
     // Users
     Route::get('/users', [UserController::class, 'index'])->name('users.index')->middleware('role:spv,admin');
