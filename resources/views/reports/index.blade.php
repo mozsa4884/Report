@@ -21,11 +21,18 @@
 
 <!-- Filter & Search Section -->
 <div class="card-table-container" style="margin-bottom: 1.5rem;">
-    <form method="GET" action="{{ route('reports.index') }}" class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+    <form method="GET" action="{{ route('reports.index') }}" class="form-row" style="display: grid; grid-template-columns: {{ $sites ? '2fr 1fr 1fr 1fr 1fr' : '2fr 1fr 1fr 1fr' }}; gap: 1rem; align-items: end;">
+        <!-- Pencarian - Paling kiri dan lebih lebar -->
+        <div class="form-group" style="margin-bottom: 0;">
+            <label for="search">Pencarian</label>
+            <input type="text" name="search" id="search" class="form-control" placeholder="Cari tanggal, nama..." value="{{ $search ?? '' }}">
+        </div>
+        
+        <!-- Site (jika ada) -->
         @if($sites)
         <div class="form-group" style="margin-bottom: 0;">
             <label for="site_id">Site / Lokasi</label>
-            <select name="site_id" id="site_id" class="form-control" onchange="this.form.submit()">
+            <select name="site_id" id="site_id" class="form-control">
                 <option value="">Semua Site</option>
                 @foreach($sites as $site)
                     <option value="{{ $site->id }}" {{ $siteId == $site->id ? 'selected' : '' }}>
@@ -36,9 +43,10 @@
         </div>
         @endif
         
+        <!-- Status -->
         <div class="form-group" style="margin-bottom: 0;">
             <label for="status">Status</label>
-            <select name="status" id="status" class="form-control" onchange="this.form.submit()">
+            <select name="status" id="status" class="form-control">
                 <option value="">Semua Status</option>
                 <option value="draft" {{ $status == 'draft' ? 'selected' : '' }}>Draft</option>
                 <option value="submitted" {{ $status == 'submitted' ? 'selected' : '' }}>Menunggu GL</option>
@@ -48,36 +56,23 @@
             </select>
         </div>
         
-        <div class="form-group" style="margin-bottom: 0;">
-            <label for="search">Pencarian</label>
-            <input type="text" name="search" id="search" class="form-control" placeholder="Cari tanggal, nama..." value="{{ $search ?? '' }}">
-        </div>
-        
+        <!-- Urutkan -->
         <div class="form-group" style="margin-bottom: 0;">
             <label for="sort">Urutkan</label>
-            <select name="sort" id="sort" class="form-control" onchange="this.form.submit()">
+            <select name="sort" id="sort" class="form-control">
                 <option value="desc" {{ $sortOrder == 'desc' ? 'selected' : '' }}>Terbaru</option>
                 <option value="asc" {{ $sortOrder == 'asc' ? 'selected' : '' }}>Terlama</option>
             </select>
         </div>
         
+        <!-- Tombol Terapkan -->
         <div class="form-group" style="margin-bottom: 0;">
-            <label for="per_page">Tampilkan</label>
-            <select name="per_page" id="per_page" class="form-control" onchange="this.form.submit()">
-                <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
-                <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
-                <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
-                <option value="100" {{ $perPage == 100 ? 'selected' : '' }}>100</option>
-            </select>
-        </div>
-        
-        <div class="form-group" style="margin-bottom: 0; display: flex; align-items: flex-end;">
             <button type="submit" class="btn btn-primary" style="width: 100%;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="11" cy="11" r="8"></circle>
                     <path d="m21 21-4.35-4.35"></path>
                 </svg>
-                Cari
+                Terapkan
             </button>
         </div>
     </form>
@@ -96,6 +91,25 @@
 </div>
 
 <div class="card-table-container">
+    <!-- Header dengan Tampilkan per halaman -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h2 class="card-title" style="margin: 0;">Semua Laporan Harian</h2>
+        <form method="GET" action="{{ route('reports.index') }}" style="display: flex; align-items: center; gap: 0.5rem;">
+            <!-- Preserve all filter params -->
+            <input type="hidden" name="site_id" value="{{ $siteId }}">
+            <input type="hidden" name="status" value="{{ $status }}">
+            <input type="hidden" name="search" value="{{ $search }}">
+            <input type="hidden" name="sort" value="{{ $sortOrder }}">
+            
+            <label for="per_page_top" style="font-size: 0.9rem; color: var(--text-secondary); margin: 0;">Tampilkan:</label>
+            <select name="per_page" id="per_page_top" class="form-control" onchange="this.form.submit()" style="width: auto; padding: 0.4rem 0.75rem; font-size: 0.9rem;">
+                <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+                <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
+                <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+                <option value="100" {{ $perPage == 100 ? 'selected' : '' }}>100</option>
+            </select>
+        </form>
+    </div>
     <h2 class="card-title">Semua Laporan Harian</h2>
     <div class="table-responsive">
         <table class="table-list">
@@ -194,8 +208,27 @@
         </table>
     </div>
     
+    {{-- Always show pagination info --}}
     <div style="margin-top: 1.5rem;">
-        {{ $reports->appends(['site_id' => $siteId, 'status' => $status, 'search' => $search, 'sort' => $sortOrder, 'per_page' => $perPage])->links() }}
+        @if($reports->total() > 0)
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0;">
+                <div style="color: var(--text-muted); font-size: 0.9rem;">
+                    Menampilkan <strong>{{ $reports->firstItem() }}</strong> sampai <strong>{{ $reports->lastItem() }}</strong> dari <strong>{{ $reports->total() }}</strong> hasil
+                </div>
+                
+                @if($reports->hasPages())
+                    <div>
+                        {{ $reports->appends(['site_id' => $siteId, 'status' => $status, 'search' => $search, 'sort' => $sortOrder, 'per_page' => $perPage])->links() }}
+                    </div>
+                @else
+                    <div>
+                        <span style="padding: 0.5rem 1rem; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-secondary); color: var(--text-muted); font-size: 0.9rem;">
+                            Halaman 1 dari 1
+                        </span>
+                    </div>
+                @endif
+            </div>
+        @endif
     </div>
 </div>
 @endsection

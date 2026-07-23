@@ -164,7 +164,9 @@ class DashboardController extends Controller
         // Calculate summary statistics
         $totalUsage = $usageData->sum('total_pakai');
         $totalReports = $approvedReports->count();
-        $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+        
+        // Get days in month using Carbon
+        $daysInMonth = \Carbon\Carbon::createFromDate($year, $month, 1)->daysInMonth;
         $avgDailyUsage = $totalReports > 0 ? $totalUsage / $totalReports : 0;
         
         $summaryStats = [

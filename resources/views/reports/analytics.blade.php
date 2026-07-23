@@ -237,7 +237,7 @@
     <form method="GET" action="{{ route('reports.analytics') }}" class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
         <div class="form-group" style="margin-bottom: 0;">
             <label for="site_id">Site / Lokasi <span style="color: var(--danger);">*</span></label>
-            <select name="site_id" id="site_id" class="form-control" onchange="this.form.submit()" required>
+            <select name="site_id" id="site_id" class="form-control" required>
                 <option value="">Pilih Site</option>
                 @foreach($sites as $site)
                     <option value="{{ $site->id }}" {{ $siteId == $site->id ? 'selected' : '' }}>
@@ -249,7 +249,7 @@
         
         <div class="form-group" style="margin-bottom: 0;">
             <label for="month">Bulan <span style="color: var(--danger);">*</span></label>
-            <select name="month" id="month" class="form-control" onchange="this.form.submit()" required>
+            <select name="month" id="month" class="form-control" required>
                 <option value="">Pilih Bulan</option>
                 <option value="1" {{ $month == '1' ? 'selected' : '' }}>Januari</option>
                 <option value="2" {{ $month == '2' ? 'selected' : '' }}>Februari</option>
@@ -268,12 +268,22 @@
         
         <div class="form-group" style="margin-bottom: 0;">
             <label for="year">Tahun <span style="color: var(--danger);">*</span></label>
-            <select name="year" id="year" class="form-control" onchange="this.form.submit()" required>
+            <select name="year" id="year" class="form-control" required>
                 <option value="">Pilih Tahun</option>
                 @foreach($years as $y)
                     <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
                 @endforeach
             </select>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 0; display: flex; align-items: flex-end;">
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
+                Terapkan
+            </button>
         </div>
     </form>
 </div>
