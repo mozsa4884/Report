@@ -25,11 +25,11 @@
             </td>
             <td class="item-main-hole" style="text-align: center;">{{ $selectedTank?->main_hole ?? '-' }}</td>
             <td><input type="number" step="0.01" name="items[{{ $i }}][sounding_pagi]" class="sheet-input" data-item-type="sounding_pagi" value="{{ old("items.{$i}.sounding_pagi", $savedItem?->sounding_pagi) }}"></td>
-            <td><input type="text" name="items[{{ $i }}][liter_pagi]" class="sheet-input read-only" data-item-type="liter_pagi" value="{{ old("items.{$i}.liter_pagi", $savedItem?->liter_pagi ?? 'XXXX') }}" readonly></td>
+            <td><input type="text" name="items[{{ $i }}][liter_pagi]" class="sheet-input read-only" data-item-type="liter_pagi" value="{{ old("items.{$i}.liter_pagi", $savedItem?->liter_pagi ?? (Auth::user()->isFuelman() ? 'XXXX' : '')) }}" readonly></td>
             <td><input type="time" name="items[{{ $i }}][jam_pagi]" class="sheet-input" value="{{ old("items.{$i}.jam_pagi", $savedItem?->jam_pagi ? \Carbon\Carbon::parse($savedItem->jam_pagi)->format('H:i') : '') }}"></td>
             <td><input type="text" name="items[{{ $i }}][petugas_pagi]" class="sheet-input" value="{{ old("items.{$i}.petugas_pagi", $savedItem?->petugas_pagi) }}"></td>
             <td><input type="number" step="0.01" name="items[{{ $i }}][sounding_sore]" class="sheet-input" data-item-type="sounding_sore" value="{{ old("items.{$i}.sounding_sore", $savedItem?->sounding_sore) }}"></td>
-            <td><input type="text" name="items[{{ $i }}][liter_sore]" class="sheet-input read-only" data-item-type="liter_sore" value="{{ old("items.{$i}.liter_sore", $savedItem?->liter_sore ?? '-') }}" readonly></td>
+            <td><input type="text" name="items[{{ $i }}][liter_sore]" class="sheet-input read-only" data-item-type="liter_sore" value="{{ old("items.{$i}.liter_sore", $savedItem?->liter_sore ?? (Auth::user()->isFuelman() ? 'XXXX' : '')) }}" readonly></td>
             <td><input type="time" name="items[{{ $i }}][jam_sore]" class="sheet-input" value="{{ old("items.{$i}.jam_sore", $savedItem?->jam_sore ? \Carbon\Carbon::parse($savedItem->jam_sore)->format('H:i') : '') }}"></td>
             <td><input type="text" name="items[{{ $i }}][petugas_sore]" class="sheet-input" value="{{ old("items.{$i}.petugas_sore", $savedItem?->petugas_sore) }}"></td>
             <td><input type="number" name="items[{{ $i }}][fm_pagi]" class="sheet-input" data-item-type="fm_pagi" value="{{ old("items.{$i}.fm_pagi", $savedItem?->fm_pagi) }}"></td>

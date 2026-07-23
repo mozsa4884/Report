@@ -682,6 +682,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Auto-calculate liters from sounding (AJAX Calibration)
     const allSoundingInputs = document.querySelectorAll('input[data-type="sounding_pagi"], input[data-type="sounding_sore"]');
+    const userRole = '{{ Auth::user()->role }}';
+    const isFuelman = userRole === 'fuelman';
     
     allSoundingInputs.forEach(input => {
         if (input.classList.contains('read-only')) return; // Skip average rows
@@ -703,6 +705,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (!targetLiterInput) return;
 
+            // If fuelman, always show XXXX
+            if (isFuelman) {
+                targetLiterInput.value = 'XXXX';
+                return;
+            }
+
             // Set loading styling/opacity momentarily
             targetLiterInput.style.opacity = '0.5';
 
@@ -713,7 +721,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (data.volume !== null && data.volume !== undefined) {
                         targetLiterInput.value = data.volume;
                     } else {
-                        targetLiterInput.value = 'XXXX';
+                        targetLiterInput.value = ''; // Empty if no calibration data
                     }
                     
                     // If it's SPM3, trigger average recalculation
@@ -723,7 +731,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 })
                 .catch(err => {
                     targetLiterInput.style.opacity = '1';
-                    targetLiterInput.value = 'XXXX';
+                    targetLiterInput.value = ''; // Empty on error
                     console.error('Error fetching volume calibration:', err);
                 });
         });
@@ -792,10 +800,17 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!tankId || isNaN(sounding)) return;
 
         const liter = row.querySelector(event.target.dataset.itemType === 'sounding_pagi' ? '[data-item-type="liter_pagi"]' : '[data-item-type="liter_sore"]');
+        
+        // If fuelman, always show XXXX
+        if (isFuelman) {
+            liter.value = 'XXXX';
+            return;
+        }
+        
         fetch(`/api/tanks/${tankId}/volume?sounding=${sounding}`)
             .then(response => response.json())
-            .then(data => liter.value = data.volume ?? 'XXXX')
-            .catch(() => liter.value = 'XXXX');
+            .then(data => liter.value = data.volume ?? '')
+            .catch(() => liter.value = '');
     });
     document.getElementById('addReportItemRow').addEventListener('click', () => {
         const index = reportItemRows.querySelectorAll('tr').length;
