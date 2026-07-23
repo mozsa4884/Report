@@ -616,10 +616,10 @@
                                 <td class="val-liter" style="text-align: right; padding-right: 8px;">
                                     @if(Auth::user()->isFuelman())
                                         XXXX
+                                    @elseif($item->sounding_pagi === null)
+                                        
                                     @elseif($item->liter_pagi !== null)
                                         {{ number_format($item->liter_pagi, 0, ',', '.') }}
-                                    @else
-                                        XXXX
                                     @endif
                                 </td>
                                 <td style="text-align: center;">
@@ -634,10 +634,10 @@
                                 <td class="val-liter" style="text-align: right; padding-right: 8px;">
                                     @if(Auth::user()->isFuelman())
                                         XXXX
+                                    @elseif($item->sounding_sore === null)
+                                        
                                     @elseif($item->liter_sore !== null)
                                         {{ number_format($item->liter_sore, 0, ',', '.') }}
-                                    @else
-                                        XXXX
                                     @endif
                                 </td>
                                 <td style="text-align: center;">
@@ -833,10 +833,10 @@
                         <td class="val-liter" style="text-align: right; padding-right: 8px;">
                             @if(Auth::user()->isFuelman())
                                 XXXX
+                            @elseif($transfer->spm_hasil === null)
+                                
                             @elseif($transfer->spm_liter !== null)
                                 {{ number_format($transfer->spm_liter, 0, ',', '.') }}
-                            @else
-                                XXXX
                             @endif
                         </td>
                         
@@ -847,10 +847,10 @@
                         <td class="val-liter" style="text-align: right; padding-right: 8px;">
                             @if(Auth::user()->isFuelman())
                                 XXXX
+                            @elseif($transfer->ft_hasil === null)
+                                
                             @elseif($transfer->ft_liter !== null)
                                 {{ number_format($transfer->ft_liter, 0, ',', '.') }}
-                            @else
-                                XXXX
                             @endif
                         </td>
                         
