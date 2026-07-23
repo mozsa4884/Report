@@ -241,10 +241,6 @@
                                     <input type="hidden" name="items[{{ $index }}][attachment_key]" value="item-{{ $tank->id }}">
                                 @endif
                                 
-                                <!-- Native file input (visible) -->
-                                <input type="file" name="items[{{ $index }}][photos][]" accept="image/jpeg,image/png,image/webp" multiple data-photo-input 
-                                       style="display: block; margin-bottom: 8px; font-size: 0.85rem; width: 100%;">
-                                
                                 <!-- Existing photos list -->
                                 <div class="photo-selected-list" data-photo-selected>
                                     @foreach($existingAttachments as $attachment)
@@ -257,10 +253,10 @@
                                     @endforeach
                                 </div>
                                 
-                                <!-- Styled button trigger (optional, for better UX) -->
+                                <!-- Styled button with hidden input -->
                                 <label class="photo-upload-button">
                                     Pilih foto
-                                    <input type="file" name="items[{{ $index }}][photos_styled][]" accept="image/jpeg,image/png,image/webp" multiple data-photo-input-styled style="display: none;">
+                                    <input type="file" name="items[{{ $index }}][photos][]" accept="image/jpeg,image/png,image/webp" multiple data-photo-input>
                                 </label>
                             </td>
                             <td class="row-action" style="text-align: center;"></td>
@@ -494,10 +490,6 @@
                                     <input type="hidden" name="transfers[{{ $i }}][attachment_key]" value="transfer-{{ $tData->id }}">
                                 @endif
                                 
-                                <!-- Native file input (visible) -->
-                                <input type="file" name="transfers[{{ $i }}][photos][]" accept="image/jpeg,image/png,image/webp" multiple data-photo-input 
-                                       style="display: block; margin-bottom: 8px; font-size: 0.85rem; width: 100%;">
-                                
                                 <!-- Existing photos list -->
                                 <div class="photo-selected-list" data-photo-selected>
                                     @foreach($existingAttachments as $attachment)
@@ -510,10 +502,10 @@
                                     @endforeach
                                 </div>
                                 
-                                <!-- Styled button trigger (optional, for better UX) -->
+                                <!-- Styled button with hidden input -->
                                 <label class="photo-upload-button">
                                     Pilih foto
-                                    <input type="file" name="transfers[{{ $i }}][photos_styled][]" accept="image/jpeg,image/png,image/webp" multiple data-photo-input-styled style="display: none;">
+                                    <input type="file" name="transfers[{{ $i }}][photos][]" accept="image/jpeg,image/png,image/webp" multiple data-photo-input>
                                 </label>
                             </td>
                             <td class="row-action" style="text-align: center;"></td>
@@ -1164,15 +1156,6 @@ document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('change', async (event) => {
         if (event.target.matches('input[data-photo-input]')) {
             await addSelectedPhotos(event.target);
-        }
-        if (event.target.matches('input[data-photo-input-styled]')) {
-            // Sync styled input to native input
-            const cell = event.target.closest('.photo-upload-cell');
-            const nativeInput = cell.querySelector('input[data-photo-input]');
-            if (nativeInput) {
-                nativeInput.files = event.target.files;
-                await addSelectedPhotos(nativeInput);
-            }
         }
     });
 
