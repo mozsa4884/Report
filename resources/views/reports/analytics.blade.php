@@ -133,22 +133,23 @@
         display: flex;
         align-items: flex-end;
         justify-content: center;
-        height: 160px;
+        height: 180px;
         padding: 0 0.75rem;
+        padding-top: 2rem;
         border-bottom: 2px solid var(--border-color);
         background: repeating-linear-gradient(
             to bottom,
             transparent 0,
-            transparent 39px,
-            var(--border-color) 40px
+            transparent 44px,
+            var(--border-color) 45px
         );
     }
 
     .usage-chart-bar {
         width: min(72%, 68px);
-        min-height: 0;
+        min-height: 4px;
         border-radius: 8px 8px 2px 2px;
-        background: linear-gradient(90deg, var(--info), var(--primary));
+        background: linear-gradient(180deg, var(--primary), var(--info));
         transition: height 180ms ease;
         position: relative;
     }
@@ -156,12 +157,17 @@
     .usage-chart-bar::after {
         content: attr(data-percentage);
         position: absolute;
-        top: -1.5rem;
+        top: -2rem;
         left: 50%;
         transform: translateX(-50%);
-        font-size: 0.75rem;
-        color: var(--text-muted);
-        font-weight: 600;
+        font-size: 0.8rem;
+        color: var(--text-primary);
+        font-weight: 700;
+        background: var(--bg-secondary);
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        white-space: nowrap;
+        z-index: 10;
     }
 
     .usage-chart-zero {
@@ -182,19 +188,50 @@
         text-align: center;
     }
 
+    .detail-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
     .detail-table th {
-        background: var(--bg-primary);
-        font-weight: 600;
+        background: linear-gradient(180deg, var(--bg-primary), var(--bg-secondary));
+        font-weight: 700;
         text-align: left;
-        padding: 0.875rem 1rem;
+        padding: 1rem;
+        border-bottom: 2px solid var(--border-color);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-secondary);
     }
 
     .detail-table td {
-        padding: 0.875rem 1rem;
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 0.95rem;
+    }
+    
+    .detail-table tbody tr:nth-child(even) {
+        background: var(--bg-primary);
     }
 
-    .detail-table tr:hover {
-        background: var(--bg-hover);
+    .detail-table tbody tr:hover {
+        background: rgba(13, 148, 136, 0.05);
+        transition: background 0.15s ease;
+    }
+    
+    .detail-table tbody tr:last-child {
+        background: var(--primary);
+        color: white;
+    }
+    
+    .detail-table tbody tr:last-child td {
+        border-bottom: none;
+        font-weight: 700;
+    }
+    
+    .detail-table tbody tr:last-child:hover {
+        background: var(--primary-hover);
     }
 
     .progress-bar-container {
@@ -442,10 +479,10 @@
                         </td>
                     </tr>
                 @endforeach
-                <tr style="background: var(--bg-primary); font-weight: 600;">
+                <tr style="background: var(--primary) !important; color: white;">
                     <td colspan="2"><strong>TOTAL</strong></td>
                     <td style="text-align: right;"><strong>{{ number_format($summaryStats['total_usage'], 0, ',', '.') }}</strong></td>
-                    <td colspan="3"></td>
+                    <td colspan="3" style="text-align: right;">-</td>
                     <td><strong>100%</strong></td>
                 </tr>
             </tbody>

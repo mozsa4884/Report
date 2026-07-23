@@ -110,7 +110,6 @@
             </select>
         </form>
     </div>
-    <h2 class="card-title">Semua Laporan Harian</h2>
     <div class="table-responsive">
         <table class="table-list">
             <thead>
@@ -208,27 +207,57 @@
         </table>
     </div>
     
-    {{-- Always show pagination info --}}
+    {{-- Custom Pagination --}}
     <div style="margin-top: 1.5rem;">
         @if($reports->total() > 0)
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; gap: 1rem; flex-wrap: wrap;">
+                {{-- Info --}}
                 <div style="color: var(--text-muted); font-size: 0.9rem;">
-                    Menampilkan <strong>{{ $reports->firstItem() }}</strong> sampai <strong>{{ $reports->lastItem() }}</strong> dari <strong>{{ $reports->total() }}</strong> hasil
+                    Menampilkan <strong style="color: var(--text-primary);">{{ $reports->firstItem() }}</strong> - <strong style="color: var(--text-primary);">{{ $reports->lastItem() }}</strong> dari <strong style="color: var(--text-primary);">{{ $reports->total() }}</strong> data
                 </div>
                 
-                @if($reports->hasPages())
-                    <div>
-                        {{ $reports->appends(['site_id' => $siteId, 'status' => $status, 'search' => $search, 'sort' => $sortOrder, 'per_page' => $perPage])->links() }}
-                    </div>
-                @else
-                    <div>
-                        <span style="padding: 0.5rem 1rem; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-secondary); color: var(--text-muted); font-size: 0.9rem;">
-                            Halaman 1 dari 1
+                {{-- Pagination Controls --}}
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    {{-- Previous Button --}}
+                    @if($reports->onFirstPage())
+                        <span style="padding: 0.5rem 1rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary); color: var(--text-muted); font-size: 0.9rem; cursor: not-allowed; opacity: 0.5;">
+                            ← Sebelumnya
                         </span>
-                    </div>
-                @endif
+                    @else
+                        <a href="{{ $reports->appends(['site_id' => $siteId, 'status' => $status, 'search' => $search, 'sort' => $sortOrder, 'per_page' => $perPage])->previousPageUrl() }}" style="padding: 0.5rem 1rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.9rem; text-decoration: none; transition: all 0.2s ease; display: inline-block;">
+                            ← Sebelumnya
+                        </a>
+                    @endif
+                    
+                    {{-- Page Info --}}
+                    <span style="padding: 0.5rem 1rem; border: 1px solid var(--primary); border-radius: 8px; background: var(--primary); color: white; font-size: 0.9rem; font-weight: 600;">
+                        Halaman {{ $reports->currentPage() }} dari {{ $reports->lastPage() }}
+                    </span>
+                    
+                    {{-- Next Button --}}
+                    @if($reports->hasMorePages())
+                        <a href="{{ $reports->appends(['site_id' => $siteId, 'status' => $status, 'search' => $search, 'sort' => $sortOrder, 'per_page' => $perPage])->nextPageUrl() }}" style="padding: 0.5rem 1rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.9rem; text-decoration: none; transition: all 0.2s ease; display: inline-block;">
+                            Selanjutnya →
+                        </a>
+                    @else
+                        <span style="padding: 0.5rem 1rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary); color: var(--text-muted); font-size: 0.9rem; cursor: not-allowed; opacity: 0.5;">
+                            Selanjutnya →
+                        </span>
+                    @endif
+                </div>
             </div>
         @endif
     </div>
 </div>
+
+<style>
+    /* Hover effect for pagination buttons */
+    a[href*="page="]:hover {
+        background: var(--primary) !important;
+        color: white !important;
+        border-color: var(--primary) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(13, 148, 136, 0.3);
+    }
+</style>
 @endsection
