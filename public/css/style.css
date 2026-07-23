@@ -1666,8 +1666,8 @@ body.dark-mode .brand-logo {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 48px;
-    height: 48px;
+    width: 40px;
+    height: 40px;
     border-radius: 12px;
     border: none;
     cursor: pointer;
@@ -1683,8 +1683,8 @@ body.dark-mode .brand-logo {
 }
 
 .icon-btn svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     stroke-width: 2;
 }
 
