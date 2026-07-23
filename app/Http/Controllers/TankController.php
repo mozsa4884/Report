@@ -228,18 +228,23 @@ class TankController extends Controller
 
         if ($request->hasFile('calibration_file')) {
             try {
-                DB::transaction(function () use ($tank, $request) {
-                    $tank->calibrations()->delete();
-                    $this->importCalibrationData($tank, $request->file('calibration_file'));
-                });
+                // Delete old calibrations first (outside transaction)
+                $tank->calibrations()->delete();
+                
+                // Then import new data
+                $this->importCalibrationData($tank, $request->file('calibration_file'));
+                
+                return redirect()->route('tanks.index')
+                    ->with('success', 'Data tangki dan kalibrasi berhasil diperbarui.');
             } catch (Throwable $e) {
                 Log::error('Gagal memperbarui kalibrasi tangki.', [
                     'tank_id' => $tank->id,
-                    'exception' => $e,
+                    'exception' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
                 ]);
 
                 return redirect()->route('tanks.edit', $tank->id)
-                    ->with('error', 'Gagal memproses file kalibrasi. Data kalibrasi sebelumnya tidak diubah. Pastikan file Excel valid dan memiliki kolom DIPP serta VOLUME (L).');
+                    ->with('error', 'Gagal memproses file kalibrasi: ' . $e->getMessage() . '. Data kalibrasi lama telah dihapus. Silakan upload ulang file yang benar.');
             }
         }
 
@@ -269,51 +274,29 @@ class TankController extends Controller
             $headerRow[$columnLetter] = strtolower(preg_replace('/\s+/', ' ', trim((string) $headerName)));
         }
         
-        // Find indices
+        // Find indices (case-insensitive and whitespace-tolerant)
         $dippCmKey = null;
         $dippMmKey = null;
         $volumeKey = null;
 
         foreach ($headerRow as $colLetter => $headerName) {
-            if ($headerName === 'dipp (cm)' || $headerName === 'dipp(cm)' || str_contains($headerName, 'dipp (cm)')) {
+            // Match DIPP (CM) variations
+            if (preg_match('/dipp.*cm/i', $headerName) || preg_match('/^dipp\s*\(?\s*cm\s*\)?$/i', $headerName)) {
                 $dippCmKey = $colLetter;
             }
-            if ($headerName === 'dipp (mm)' || $headerName === 'dipp(mm)' || str_contains($headerName, 'dipp (mm)')) {
+            // Match DIPP (MM) variations
+            if (preg_match('/dipp.*mm/i', $headerName) || preg_match('/^dipp\s*\(?\s*mm\s*\)?$/i', $headerName)) {
                 $dippMmKey = $colLetter;
             }
-            if ($headerName === 'volume (l)' || $headerName === 'volume(l)' || str_contains($headerName, 'volume (l)') || $headerName === 'volume(liter)') {
+            // Match VOLUME (L) variations
+            if (preg_match('/volume.*(l|liter)/i', $headerName) || preg_match('/^volume\s*\(?\s*l\s*\)?$/i', $headerName)) {
                 $volumeKey = $colLetter;
             }
         }
 
-        // If headers not found by exact string, try general matches
-        if (!$dippCmKey && !$dippMmKey) {
-            foreach ($headerRow as $colLetter => $headerName) {
-                if (str_contains($headerName, 'dipp') && str_contains($headerName, 'cm')) {
-                    $dippCmKey = $colLetter;
-                    break;
-                }
-            }
-        }
-        if (!$dippMmKey) {
-            foreach ($headerRow as $colLetter => $headerName) {
-                if (str_contains($headerName, 'dipp') && str_contains($headerName, 'mm')) {
-                    $dippMmKey = $colLetter;
-                    break;
-                }
-            }
-        }
-        if (!$volumeKey) {
-            foreach ($headerRow as $colLetter => $headerName) {
-                if (str_contains($headerName, 'volume') && (str_contains($headerName, '(l)') || str_contains($headerName, ' l'))) {
-                    $volumeKey = $colLetter;
-                    break;
-                }
-            }
-        }
-
         if ((!$dippCmKey && !$dippMmKey) || !$volumeKey) {
-            throw new \Exception('Kolom header "DIPP (CM)" atau "DIPP (MM)" dan "VOLUME (L)" tidak ditemukan pada baris pertama Excel.');
+            $foundHeaders = implode(', ', array_values($headerRow));
+            throw new \Exception("Kolom header 'DIPP (CM)' atau 'DIPP (MM)' dan 'VOLUME (L)' tidak ditemukan. Header yang ditemukan: {$foundHeaders}");
         }
 
         // Start reading data from row 2
