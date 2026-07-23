@@ -221,17 +221,19 @@
     }
     
     .detail-table tbody tr:last-child {
-        background: var(--primary);
-        color: white;
+        background: var(--bg-primary);
+        font-weight: 700;
+        border-top: 2px solid var(--border-color);
     }
     
     .detail-table tbody tr:last-child td {
         border-bottom: none;
         font-weight: 700;
+        color: var(--text-primary);
     }
     
     .detail-table tbody tr:last-child:hover {
-        background: var(--primary-hover);
+        background: var(--bg-primary);
     }
 
     .progress-bar-container {
@@ -479,7 +481,7 @@
                         </td>
                     </tr>
                 @endforeach
-                <tr style="background: var(--primary) !important; color: white;">
+                <tr>
                     <td colspan="2"><strong>TOTAL</strong></td>
                     <td style="text-align: right;"><strong>{{ number_format($summaryStats['total_usage'], 0, ',', '.') }}</strong></td>
                     <td colspan="3" style="text-align: right;">-</td>

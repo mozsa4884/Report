@@ -1668,7 +1668,7 @@ body.dark-mode .brand-logo {
     justify-content: center;
     width: 48px;
     height: 48px;
-    border-radius: 16px;
+    border-radius: 20px;
     border: none;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -1679,13 +1679,13 @@ body.dark-mode .brand-logo {
 
 .icon-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }
 
 .icon-btn svg {
     width: 24px;
     height: 24px;
-    stroke-width: 2.5;
+    stroke-width: 2;
 }
 
 .icon-btn-info {
