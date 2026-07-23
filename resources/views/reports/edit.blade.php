@@ -449,11 +449,25 @@
                             </td>
                             <td class="photo-upload-cell">
                                 @php
+                                    // Debug all attachments
+                                    if ($i === 0) {
+                                        dump('Total Attachments in Report:', $report->attachments->count());
+                                        dump('All Attachments:', $report->attachments->map(fn($a) => [
+                                            'id' => $a->id,
+                                            'section' => $a->section,
+                                            'key' => $a->attachment_key,
+                                            'path' => $a->path,
+                                        ])->toArray());
+                                    }
+                                    
                                     $existingAttachments = $tData
                                         ? $report->attachments->where('section', 'B')->where('attachment_key', "transfer-{$tData->id}")
                                         : collect();
-                                    // Debug: uncomment to see attachment data
-                                    dump("Transfer {$i}: tData ID = " . ($tData ? $tData->id : 'null') . ", Attachments = " . $existingAttachments->count());
+                                    
+                                    dump("Transfer Row {$i}: tData exists = " . ($tData ? 'YES' : 'NO') . 
+                                         ", tData ID = " . ($tData ? $tData->id : 'null') . 
+                                         ", Looking for key: " . ($tData ? "transfer-{$tData->id}" : 'N/A') .
+                                         ", Found attachments = " . $existingAttachments->count());
                                 @endphp
                                 <div class="photo-selected-list" data-photo-selected>
                                     @foreach($existingAttachments as $attachment)
