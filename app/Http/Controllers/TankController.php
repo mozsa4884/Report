@@ -144,7 +144,7 @@ class TankController extends Controller
             abort(403, 'Fuelman tidak memiliki akses ke data tangki BBM.');
         }
 
-        $tanks = Tank::orderBy('code')->orderBy('main_hole')->get();
+        $tanks = Tank::with('site')->orderBy('code')->orderBy('main_hole')->get();
         return view('tanks.index', compact('tanks'));
     }
 

@@ -26,6 +26,7 @@
             <thead>
                 <tr>
                     <th style="width: 60px;">No</th>
+                    <th>Site / Lokasi</th>
                     <th>Kode Tangki</th>
                     <th>Main Hole</th>
                     <th>Kapasitas (L)</th>
@@ -40,6 +41,14 @@
                 @foreach($tanks as $index => $tank)
                     <tr>
                         <td>{{ $index + 1 }}</td>
+                        <td>
+                            @if($tank->site)
+                                <span style="font-weight: 500;">{{ $tank->site->code }}</span>
+                                <span style="color: var(--text-muted); font-size: 0.85rem;">{{ $tank->site->name }}</span>
+                            @else
+                                <span class="badge badge-draft" style="background-color: #fef3c7; color: #92400e;">Belum Diset</span>
+                            @endif
+                        </td>
                         <td><strong>{{ $tank->code }}</strong></td>
                         <td>{{ $tank->main_hole }}</td>
                         <td>{{ $tank->capacity > 0 ? number_format($tank->capacity) . ' L' : '-' }}</td>
