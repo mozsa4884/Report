@@ -653,7 +653,7 @@
                                     {{ $item->fm_sore !== null ? number_format($item->fm_sore, 0, ',', '.') : '' }}
                                 </td>
                                 <td class="val-pakai" style="text-align: right; padding-right: 8px;">
-                                        {{ $item->fm_pakai !== null ? number_format($item->fm_pakai, 0, ',', '.') : '0' }}
+                                        {{ $item->fm_pakai !== null && $item->fm_pakai != 0 ? number_format($item->fm_pakai, 0, ',', '.') : '' }}
                                 </td>
                                 
                                 <!-- Keterangan -->

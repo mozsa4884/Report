@@ -215,7 +215,7 @@
                                        data-tank-code="{{ $tank->code }}"
                                        data-main-hole="{{ $tank->main_hole }}"
                                        data-type="fm_pakai" 
-                                       value="{{ old("items.{$index}.fm_pakai", $item ? $item->fm_pakai : 0) }}" 
+                                       value="{{ old("items.{$index}.fm_pakai", $item && $item->fm_pakai != 0 ? $item->fm_pakai : '') }}" 
                                        readonly>
                             </td>
                             
