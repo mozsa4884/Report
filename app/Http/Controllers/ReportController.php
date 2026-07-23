@@ -35,25 +35,12 @@ class ReportController extends Controller
             abort(403, 'Hanya Fuelman yang dapat membuat laporan baru.');
         }
 
-        // Load tanks based on old site selection (for validation errors) or show all tanks with null site_id
-        $selectedSiteId = old('site_id');
-        if ($selectedSiteId) {
-            $tanks = Tank::where('is_active', true)
-                ->where(function($query) use ($selectedSiteId) {
-                    $query->where('site_id', $selectedSiteId)
-                          ->orWhereNull('site_id');
-                })
-                ->orderBy('code')
-                ->orderBy('main_hole')
-                ->get();
-        } else {
-            // Show tanks without site_id (legacy) or empty collection
-            $tanks = Tank::where('is_active', true)
-                ->whereNull('site_id')
-                ->orderBy('code')
-                ->orderBy('main_hole')
-                ->get();
-        }
+        // Load ALL active tanks (user will select site in form, tanks will be there)
+        // This is necessary because form doesn't dynamically reload on site change
+        $tanks = Tank::where('is_active', true)
+            ->orderBy('code')
+            ->orderBy('main_hole')
+            ->get();
         
         $defaultDate = now()->format('Y-m-d');
         $sites = \App\Models\Site::where('is_active', true)->orderBy('code')->get();
@@ -251,7 +238,7 @@ class ReportController extends Controller
         $transfers = $report->transfers;
         $flowmeters = $report->flowmeters;
         
-        // Filter tanks by the report's site_id OR tanks without site_id (legacy)
+        // Load ALL active tanks for the report's site (including null for legacy)
         $tanks = Tank::where('is_active', true)
             ->where(function($query) use ($report) {
                 $query->where('site_id', $report->site_id)
