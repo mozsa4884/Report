@@ -233,11 +233,14 @@
                             <!-- FOTO -->
                             <td class="photo-upload-cell">
                                 @php
-                                    // Simple approach: match by context containing tank code and main hole
+                                    // Match by: report ID + section + context string
                                     $contextSearch = 'Tangki ' . $tank->code . ' — ' . $tank->main_hole;
                                     $existingAttachments = $report->attachments
                                         ->where('section', 'A')
                                         ->filter(fn($a) => str_contains($a->context ?? '', $contextSearch));
+                                    
+                                    // Attachments already filtered by report relationship ($report->attachments)
+                                    // so they're automatically scoped to this specific report (date + site)
                                     
                                     // Keep attachment_key for form submission
                                     $attachmentKey = $item ? "item-{$item->tank_id}" : "item-{$tank->id}";
