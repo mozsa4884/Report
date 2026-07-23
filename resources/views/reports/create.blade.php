@@ -721,7 +721,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (data.volume !== null && data.volume !== undefined) {
                         targetLiterInput.value = data.volume;
                     } else {
-                        targetLiterInput.value = ''; // Empty if no calibration data
+                        // If no calibration data found, show XXXX for GL/SPV
+                        targetLiterInput.value = 'XXXX';
                     }
                     
                     // If it's SPM3, trigger average recalculation
@@ -731,7 +732,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 })
                 .catch(err => {
                     targetLiterInput.style.opacity = '1';
-                    targetLiterInput.value = ''; // Empty on error
+                    targetLiterInput.value = 'XXXX'; // Show XXXX on error
                     console.error('Error fetching volume calibration:', err);
                 });
         });
