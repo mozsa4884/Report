@@ -4,15 +4,22 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Tank extends Model
 {
     protected $fillable = [
+        'site_id',
         'code',
         'main_hole',
         'capacity',
         'is_active',
     ];
+
+    public function site(): BelongsTo
+    {
+        return $this->belongsTo(Site::class);
+    }
 
     public function items(): HasMany
     {

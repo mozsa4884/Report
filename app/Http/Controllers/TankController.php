@@ -70,8 +70,10 @@ class TankController extends Controller
                 ->orderByDesc('status') // Prefer approved/verified over draft if multiple exist for same date
                 ->first();
 
+            // Filter tanks by selected site
             $tanks = Tank::query()
                 ->where('is_active', true)
+                ->where('site_id', $selectedSiteId)
                 ->orderBy('code')
                 ->orderBy('main_hole')
                 ->get();
@@ -151,7 +153,9 @@ class TankController extends Controller
         if (!Auth::user()->isSpv()) {
             abort(403, 'Hanya Supervisor yang dapat menambah tangki baru.');
         }
-        return view('tanks.create');
+        
+        $sites = \App\Models\Site::where('is_active', true)->orderBy('code')->get();
+        return view('tanks.create', compact('sites'));
     }
 
     public function store(Request $request)
@@ -161,6 +165,7 @@ class TankController extends Controller
         }
 
         $request->validate([
+            'site_id'           => 'required|exists:sites,id',
             'code'              => 'required|string|max:50',
             'main_hole'         => 'required|string|max:50',
             'capacity'          => 'nullable|numeric|min:0',
@@ -169,6 +174,7 @@ class TankController extends Controller
         ]);
 
         $tank = Tank::create([
+            'site_id'   => $request->site_id,
             'code'      => $request->code,
             'main_hole' => $request->main_hole,
             'capacity'  => $request->capacity,
@@ -200,7 +206,8 @@ class TankController extends Controller
         }
 
         $tank = Tank::findOrFail($id);
-        return view('tanks.edit', compact('tank'));
+        $sites = \App\Models\Site::where('is_active', true)->orderBy('code')->get();
+        return view('tanks.edit', compact('tank', 'sites'));
     }
 
     public function update(Request $request, $id)
@@ -212,6 +219,7 @@ class TankController extends Controller
         $tank = Tank::findOrFail($id);
 
         $request->validate([
+            'site_id'           => 'required|exists:sites,id',
             'code'              => 'required|string|max:50',
             'main_hole'         => 'required|string|max:50',
             'capacity'          => 'nullable|numeric|min:0',
@@ -220,6 +228,7 @@ class TankController extends Controller
         ]);
 
         $tank->update([
+            'site_id'   => $request->site_id,
             'code'      => $request->code,
             'main_hole' => $request->main_hole,
             'capacity'  => $request->capacity,

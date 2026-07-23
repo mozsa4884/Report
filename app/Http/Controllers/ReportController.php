@@ -35,11 +35,8 @@ class ReportController extends Controller
             abort(403, 'Hanya Fuelman yang dapat membuat laporan baru.');
         }
 
-        // Check if report already exists for today or a specific date
-        $tanks = Tank::where('is_active', true)
-            ->orderBy('code')
-            ->orderBy('main_hole')
-            ->get();
+        // Don't load tanks initially - they will be filtered by site_id selection in the form
+        $tanks = collect(); // Empty collection
         $defaultDate = now()->format('Y-m-d');
         $sites = \App\Models\Site::where('is_active', true)->orderBy('code')->get();
 
@@ -235,7 +232,10 @@ class ReportController extends Controller
         $items = $report->items->keyBy('tank_id');
         $transfers = $report->transfers;
         $flowmeters = $report->flowmeters;
+        
+        // Filter tanks by the report's site_id
         $tanks = Tank::where('is_active', true)
+            ->where('site_id', $report->site_id)
             ->orderBy('code')
             ->orderBy('main_hole')
             ->get();

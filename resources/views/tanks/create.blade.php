@@ -26,6 +26,16 @@
         @csrf
         
         <div class="form-group">
+            <label for="site_id">Site / Lokasi <span style="color: #dc2626;">*</span></label>
+            <select name="site_id" id="site_id" class="form-control" required>
+                <option value="">Pilih Site</option>
+                @foreach($sites as $site)
+                    <option value="{{ $site->id }}" @selected(old('site_id') == $site->id)>{{ $site->code }} - {{ $site->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        
+        <div class="form-group">
             <label for="code">Kode Tangki</label>
             <input type="text" name="code" id="code" class="form-control" value="{{ old('code') }}" placeholder="Contoh: SPM1, FT05" required>
         </div>
