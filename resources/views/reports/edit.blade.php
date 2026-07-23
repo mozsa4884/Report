@@ -233,11 +233,29 @@
                             <!-- FOTO -->
                             <td class="photo-upload-cell">
                                 @php
+                                    // DEBUG: Show what we're looking for
+                                    if ($tank->code === 'SPM1' && $tank->main_hole === 'TENGAH') {
+                                        dump('=== DEBUG SPM1 TENGAH ===');
+                                        dump('Tank ID from loop: ' . $tank->id);
+                                        dump('Item exists: ' . ($item ? 'YES' : 'NO'));
+                                        dump('Item tank_id: ' . ($item ? $item->tank_id : 'N/A'));
+                                        dump('Attachment key looking for: ' . ($item ? "item-{$item->tank_id}" : "item-{$tank->id}"));
+                                        dump('All Section A attachments:', $report->attachments->where('section', 'A')->map(fn($a) => [
+                                            'id' => $a->id,
+                                            'key' => $a->attachment_key,
+                                            'path' => basename($a->path)
+                                        ])->toArray());
+                                    }
+                                    
                                     // Get the correct attachment key from saved item's tank_id
                                     $attachmentKey = $item ? "item-{$item->tank_id}" : "item-{$tank->id}";
                                     $existingAttachments = $report->attachments
                                         ->where('section', 'A')
                                         ->where('attachment_key', $attachmentKey);
+                                        
+                                    if ($tank->code === 'SPM1' && $tank->main_hole === 'TENGAH') {
+                                        dump('Found attachments: ' . $existingAttachments->count());
+                                    }
                                 @endphp
                                 @if($item)
                                     <input type="hidden" name="items[{{ $index }}][attachment_key]" value="{{ $attachmentKey }}">
