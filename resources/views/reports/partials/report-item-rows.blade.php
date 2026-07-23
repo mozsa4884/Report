@@ -16,10 +16,15 @@
                 @if($savedItem)
                     <input type="hidden" name="items[{{ $i }}][attachment_key]" value="item-{{ $savedItem->id }}">
                 @endif
-                <select name="items[{{ $i }}][tank_id]" class="sheet-input" data-item-type="tank_id">
+                <select name="items[{{ $i }}][tank_id]" class="sheet-input tank-select" data-item-type="tank_id">
                     <option value="">Pilih tangki</option>
                     @foreach($tanks as $tank)
-                        <option value="{{ $tank->id }}" data-main-hole="{{ $tank->main_hole }}" @selected((string) $selectedTankId === (string) $tank->id)>{{ $tank->code }}</option>
+                        <option value="{{ $tank->id }}" 
+                                data-main-hole="{{ $tank->main_hole }}" 
+                                data-site-id="{{ $tank->site_id }}"
+                                @selected((string) $selectedTankId === (string) $tank->id)>
+                            {{ $tank->code }}
+                        </option>
                     @endforeach
                 </select>
             </td>
