@@ -615,8 +615,17 @@ document.addEventListener('DOMContentLoaded', function () {
                     option.disabled = false;
                 } else {
                     const tankSiteId = option.dataset.siteId;
+                    
+                    // Hide ALL tanks if no site selected
+                    if (!selectedSiteId) {
+                        option.style.display = 'none';
+                        option.disabled = true;
+                        if (option.value === selectedValue) {
+                            select.value = '';
+                        }
+                    }
                     // Show only tanks that match selected site OR tanks without site (null)
-                    if (!selectedSiteId || tankSiteId === selectedSiteId || !tankSiteId) {
+                    else if (tankSiteId === selectedSiteId || !tankSiteId) {
                         option.style.display = '';
                         option.disabled = false;
                     } else {
