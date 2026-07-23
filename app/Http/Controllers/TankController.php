@@ -310,15 +310,40 @@ class TankController extends Controller
             $rawVol = isset($row[$volumeKey]) ? trim($row[$volumeKey]) : null;
             if ($rawVol === null || $rawVol === '') continue; // Skip empty rows
 
-            // Clean volume: handle scientific notation, commas, dots
-            $cleanVol = str_replace(',', '.', str_replace('.', '', (string) $rawVol));
-            
             // Check if it's scientific notation (contains E or e)
-            if (stripos($cleanVol, 'e') !== false) {
+            if (stripos((string) $rawVol, 'e') !== false) {
                 // Skip rows with scientific notation - likely a data error in Excel
                 $skippedRows[] = "Row {$i}: Volume {$rawVol} (scientific notation detected - possible Excel format error)";
                 continue;
             }
+            
+            // Clean volume: handle both European (1.234,56) and US (1,234.56) formats
+            $cleanVol = (string) $rawVol;
+            
+            // If it has both comma and dot, determine which is decimal separator
+            if (strpos($cleanVol, ',') !== false && strpos($cleanVol, '.') !== false) {
+                // Find which comes last - that's the decimal separator
+                $lastComma = strrpos($cleanVol, ',');
+                $lastDot = strrpos($cleanVol, '.');
+                
+                if ($lastComma > $lastDot) {
+                    // European format: 1.234,56 -> remove dots, replace comma with dot
+                    $cleanVol = str_replace('.', '', $cleanVol);
+                    $cleanVol = str_replace(',', '.', $cleanVol);
+                } else {
+                    // US format: 1,234.56 -> just remove commas
+                    $cleanVol = str_replace(',', '', $cleanVol);
+                }
+            } elseif (strpos($cleanVol, ',') !== false) {
+                // Only comma: could be European decimal (123,45) or US thousands (1,234)
+                // If there are 3 digits after comma, it's likely thousands separator
+                if (preg_match('/,\d{3}$/', $cleanVol)) {
+                    $cleanVol = str_replace(',', '', $cleanVol);
+                } else {
+                    $cleanVol = str_replace(',', '.', $cleanVol);
+                }
+            }
+            // If only dots or nothing, leave as is
             
             $vol = floatval($cleanVol);
             
