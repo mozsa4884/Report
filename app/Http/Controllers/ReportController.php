@@ -238,12 +238,8 @@ class ReportController extends Controller
         $transfers = $report->transfers;
         $flowmeters = $report->flowmeters;
         
-        // Load ALL active tanks for the report's site (including null for legacy)
+        // Load ALL active tanks, JavaScript will filter by site
         $tanks = Tank::where('is_active', true)
-            ->where(function($query) use ($report) {
-                $query->where('site_id', $report->site_id)
-                      ->orWhereNull('site_id');
-            })
             ->orderBy('code')
             ->orderBy('main_hole')
             ->get();

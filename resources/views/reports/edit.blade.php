@@ -597,6 +597,49 @@ document.addEventListener('DOMContentLoaded', function () {
     const reportForm = document.getElementById('reportForm');
     const rowTemplates = new Map();
 
+    // ===== FILTER TANKS BY SELECTED SITE =====
+    const siteSelect = document.querySelector('select[name="site_id"]');
+    const tankSelects = () => document.querySelectorAll('.tank-select');
+    
+    function filterTanksBySite() {
+        const selectedSiteId = siteSelect?.value;
+        
+        tankSelects().forEach(select => {
+            const selectedValue = select.value;
+            const options = Array.from(select.options);
+            
+            options.forEach(option => {
+                if (option.value === '') {
+                    // Keep "Pilih tangki" option always visible
+                    option.style.display = '';
+                    option.disabled = false;
+                } else {
+                    const tankSiteId = option.dataset.siteId;
+                    // Show only tanks that match selected site OR tanks without site (null)
+                    if (!selectedSiteId || tankSiteId === selectedSiteId || !tankSiteId) {
+                        option.style.display = '';
+                        option.disabled = false;
+                    } else {
+                        option.style.display = 'none';
+                        option.disabled = true;
+                        // Clear selection if this option was selected
+                        if (option.value === selectedValue) {
+                            select.value = '';
+                        }
+                    }
+                }
+            });
+        });
+    }
+    
+    // Filter on site change
+    if (siteSelect) {
+        siteSelect.addEventListener('change', filterTanksBySite);
+        // Filter on page load (for edit form with pre-selected site)
+        filterTanksBySite();
+    }
+    // ===== END FILTER TANKS =====
+
     function refreshDynamicRows(rowsContainer, fieldGroup) {
         rowsContainer.querySelectorAll('tr').forEach((row, index) => {
             const numberCell = row.querySelector('.row-number') || row.querySelector('td');
