@@ -178,7 +178,7 @@
                         @php($label = trim($row->tank->code . ' ' . $row->tank->main_hole))
                         <div class="tank-chart-group">
                             <div class="tank-bars">
-                                <div class="tank-bar capacity" style="height:{{ (($row->capacity ?? 0) / $chartMaximum) * 100 }}%" data-value="{{ number_format($row->capacity ?? 0, 0, ',', '.') }} L"></div>
+                                <div class="tank-bar capacity" style="height:{{ (($row->capacity ?? 0) / $chartMaximum) * 100 }}%" data-value="{{ $row->capacity !== null && $row->capacity > 0 ? number_format($row->capacity, 0, ',', '.') . ' L' : '-' }}"></div>
                                 <div class="tank-bar final" style="height:{{ (($row->final_liters ?? 0) / $chartMaximum) * 100 }}%" data-value="{{ number_format($row->final_liters ?? 0, 0, ',', '.') }} L"></div>
                                 <div class="tank-bar available" style="height:{{ (($row->available_capacity ?? 0) / $chartMaximum) * 100 }}%" data-value="{{ number_format($row->available_capacity ?? 0, 0, ',', '.') }} L"></div>
                             </div>
@@ -235,7 +235,7 @@
                 @forelse($monitoringRows as $row)
                     <tr>
                         <td><strong>{{ $row->tank->code }}</strong></td><td>{{ $row->tank->main_hole }}</td>
-                        <td>{{ $row->capacity !== null ? number_format($row->capacity, 0, ',', '.') . ' L' : '-' }}</td>
+                        <td>{{ $row->capacity !== null && $row->capacity > 0 ? number_format($row->capacity, 0, ',', '.') . ' L' : '-' }}</td>
                         <td>{{ $row->item?->liter_pagi !== null ? number_format($row->item->liter_pagi, 0, ',', '.') . ' L' : '-' }}</td>
                         <td>{{ $row->final_liters !== null ? number_format($row->final_liters, 0, ',', '.') . ' L' : '-' }}</td>
                         <td>{{ $row->item?->fm_pakai !== null ? number_format($row->item->fm_pakai, 0, ',', '.') . ' L' : '-' }}</td>
