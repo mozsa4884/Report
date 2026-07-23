@@ -753,7 +753,11 @@ document.addEventListener('DOMContentLoaded', function () {
             const parentRow = input.closest('tr');
             const tankIdInput = parentRow.querySelector('input[name$="[tank_id]"]');
             if (tankIdInput && tankIdInput.value) {
-                input.dispatchEvent(new Event('change'));
+                // Trigger fetch on page load if sounding has value
+                const soundingVal = parseFloat(input.value);
+                if (!isNaN(soundingVal)) {
+                    input.dispatchEvent(new Event('change'));
+                }
             }
         }
     });

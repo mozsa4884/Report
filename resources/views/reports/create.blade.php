@@ -135,7 +135,7 @@
                                        data-tank-code="{{ $tank->code }}" 
                                        data-main-hole="{{ $tank->main_hole }}" 
                                        data-type="liter_pagi" 
-                                       value="{{ old("items.{$index}.liter_pagi", 'XXXX') }}"
+                                       value="{{ old("items.{$index}.liter_pagi", '') }}"
                                        readonly>
                             </td>
                             <td>
@@ -177,7 +177,7 @@
                                        data-tank-code="{{ $tank->code }}" 
                                        data-main-hole="{{ $tank->main_hole }}" 
                                        data-type="liter_sore" 
-                                       value="{{ old("items.{$index}.liter_sore", 'XXXX') }}"
+                                       value="{{ old("items.{$index}.liter_sore", '') }}"
                                        readonly>
                             </td>
                             <td>
@@ -741,7 +741,11 @@ document.addEventListener('DOMContentLoaded', function () {
             const parentRow = input.closest('tr');
             const tankIdInput = parentRow.querySelector('input[name$="[tank_id]"]');
             if (tankIdInput && tankIdInput.value) {
-                input.dispatchEvent(new Event('change'));
+                // Trigger fetch on page load
+                const soundingVal = parseFloat(input.value);
+                if (!isNaN(soundingVal)) {
+                    input.dispatchEvent(new Event('change'));
+                }
             }
         }
     });
